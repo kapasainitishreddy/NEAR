@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "asbuild": "^0.2.0",
+    "near-cli": "^3.4.2"
+  }
+}
