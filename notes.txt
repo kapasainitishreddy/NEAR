@@ -1,0 +1,12 @@
+assembly script same as typescript, typescript is js with types and some additional fetues
+as used for webassembly
+(wasm)--webassembly : binary format used for web --->better performance than js
+webassembly is not a coding language its like a .exe file
+
+compiles as to webassembly using binaryen--a compiler
+
+
+
+
+
+
