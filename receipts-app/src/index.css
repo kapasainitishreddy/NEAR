@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: #0a0f1d;
+  background-image: radial-gradient(1200px 600px at 50% -10%, rgba(167, 158, 240, 0.10), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(231, 205, 143, 0.06), transparent 55%);
+  background-attachment: fixed;
+  color: #f5f2e9;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-family: theme('fontFamily.sans');
+}
+
+/* Hide scrollbars but keep scrolling (premium feel) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/[0.04] backdrop-blur-xl border border-white/[0.06];
+  }
+  .card {
+    @apply rounded-3xl glass shadow-card;
+  }
+  .input-base {
+    @apply w-full rounded-2xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 text-ivory-50
+      placeholder-white/30 outline-none transition focus:border-gold-400/50 focus:bg-white/[0.06]
+      focus:ring-2 focus:ring-gold-400/20;
+  }
+  .label-base {
+    @apply block text-xs font-semibold uppercase tracking-wide text-white/45 mb-1.5;
+  }
+  .pill {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium;
+  }
+}
+
+/* Safe-area padding for notched phones */
+.pb-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+}
+.pt-safe {
+  padding-top: calc(env(safe-area-inset-top) + 0.5rem);
+}
