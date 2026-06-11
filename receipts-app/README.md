@@ -116,4 +116,4 @@ therapy advice**. Review anything before sending or acting on it.
 
 ## 📄 License
 
-No license is included yet. All rights reserved until one is added.
+Released under the [MIT License](./LICENSE) © 2026 Sai Nitish Reddy.

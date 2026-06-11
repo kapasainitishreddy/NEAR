@@ -2,7 +2,14 @@
 // Caches the app shell so the tool keeps working offline.
 // No user data is ever sent anywhere — this only caches static assets.
 const CACHE = 'receipts-shell-v1'
-const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icons/icon.svg']
+const APP_SHELL = [
+  '/',
+  '/index.html',
+  '/manifest.webmanifest',
+  '/icons/icon.svg',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+]
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(APP_SHELL)))
