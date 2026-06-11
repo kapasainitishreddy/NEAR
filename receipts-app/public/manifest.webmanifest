@@ -1,0 +1,30 @@
+{
+  "name": "Receipts — Save what you decided. Say what you need.",
+  "short_name": "Receipts",
+  "description": "A local-first personal clarity app for calm scripts, decision receipts, saved drafts, reviews, and personal rules.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0e1628",
+  "theme_color": "#0e1628",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
