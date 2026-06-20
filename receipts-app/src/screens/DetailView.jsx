@@ -9,6 +9,9 @@ import { STATUSES } from '../lib/constants.js'
 import { fmtDate, isDue } from '../lib/format.js'
 import { getCategory } from '../lib/scriptTemplates.js'
 import { shareText } from '../lib/haptics.js'
+import { clarityScore } from '../lib/clarity.js'
+import ClarityRing from '../components/ClarityRing.jsx'
+import ShareCardModal from '../components/ShareCardModal.jsx'
 
 const DECISION_FIELDS = [
   ['finalDecision', 'Final decision'],
@@ -29,6 +32,7 @@ export default function DetailView() {
   const navigate = useNavigate()
   const { scripts, decisions, saveTo, deleteFrom, showToast } = useApp()
   const [confirm, setConfirm] = useState(false)
+  const [cardOpen, setCardOpen] = useState(false)
 
   const collection = type === 'script' ? 'scripts' : 'decisions'
   const item = useMemo(
@@ -99,6 +103,22 @@ export default function DetailView() {
         </div>
       )}
 
+      {/* Clarity score — only meaningful for decision receipts */}
+      {!isScript && (
+        <Card className="mb-4 !p-4">
+          {(() => {
+            const score = clarityScore(item)
+            return (
+              <ClarityRing
+                value={score.pct}
+                label={score.label}
+                sublabel={`${score.filled} of ${score.total} reflection fields filled`}
+              />
+            )
+          })()}
+        </Card>
+      )}
+
       {/* Status + review controls */}
       <Card className="mb-4 !p-4">
         <div className="flex flex-wrap items-center gap-3">
@@ -141,12 +161,15 @@ export default function DetailView() {
       )}
 
       <div className="mb-4 space-y-2">
+        <Button variant="accent" className="w-full" onClick={() => setCardOpen(true)}>
+          <ShareIcon className="h-4 w-4" /> Share as a receipt
+        </Button>
         <div className="flex gap-2">
           <Button variant="secondary" className="flex-1" onClick={copy}>
             <CopyIcon className="h-4 w-4" /> Copy
           </Button>
           <Button variant="secondary" className="flex-1" onClick={share}>
-            <ShareIcon className="h-4 w-4" /> Share
+            <ShareIcon className="h-4 w-4" /> Share text
           </Button>
         </div>
         <div className="flex gap-2">
@@ -179,6 +202,8 @@ export default function DetailView() {
         body="This permanently removes it from this device."
         confirmLabel="Delete"
       />
+
+      <ShareCardModal open={cardOpen} onClose={() => setCardOpen(false)} item={item} />
     </>
   )
 }

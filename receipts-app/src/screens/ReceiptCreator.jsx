@@ -5,6 +5,8 @@ import TopBar from '../components/TopBar.jsx'
 import { Button, Card, Field, Input, Textarea, Select, SafetyNote } from '../components/ui.jsx'
 import { StarIcon } from '../components/icons.jsx'
 import { DECISION_CATEGORIES, STATUSES } from '../lib/constants.js'
+import { clarityScore } from '../lib/clarity.js'
+import ClarityRing from '../components/ClarityRing.jsx'
 import { uid } from '../lib/id.js'
 
 // Field schema for a decision receipt. Order matters — this is the form layout.
@@ -105,6 +107,20 @@ export default function ReceiptCreator() {
           </button>
         }
       />
+
+      {/* Live clarity feedback as the receipt is filled in */}
+      <Card className="mb-5 !p-4">
+        {(() => {
+          const score = clarityScore(form)
+          return (
+            <ClarityRing
+              value={score.pct}
+              label={`Clarity: ${score.label}`}
+              sublabel="The more you reflect, the clearer future-you will see it."
+            />
+          )
+        })()}
+      </Card>
 
       <div className="space-y-5">
         {SECTIONS.map((section) => (

@@ -5,6 +5,7 @@ import TopBar from '../components/TopBar.jsx'
 import { Button, Card, EmptyState, Field, Input, Textarea, SafetyNote } from '../components/ui.jsx'
 import { ConfirmModal } from '../components/Modal.jsx'
 import { PlusIcon, TrashIcon } from '../components/icons.jsx'
+import { CompassArt } from '../components/illustrations.jsx'
 import { uid } from '../lib/id.js'
 
 const SUGGESTIONS = [
@@ -96,7 +97,7 @@ export default function Rules() {
 
       {rules.length === 0 ? (
         <EmptyState
-          emoji="🧭"
+          art={<CompassArt />}
           title="No rules yet"
           subtitle="Personal rules are the calm voice you set in advance — so heated moments don't decide for you."
         />

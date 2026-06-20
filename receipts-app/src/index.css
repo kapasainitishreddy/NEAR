@@ -4,10 +4,77 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---------------------------------------------------------------------------
+ * Theme tokens. Channels are space-separated RGB so Tailwind's `/opacity`
+ * modifiers keep working. The default (:root) is Midnight; `data-theme` on
+ * <html> swaps the whole palette. Every theme is dark so the white/opacity
+ * "glass" surfaces stay legible.
+ * ------------------------------------------------------------------------- */
+:root,
+[data-theme='midnight'] {
+  --navy-50: 238 241 248;
+  --navy-100: 215 222 240;
+  --navy-800: 22 32 59;
+  --navy-900: 14 22 40;
+  --navy-950: 10 15 29;
+  --charcoal-700: 42 47 58;
+  --charcoal-800: 31 36 46;
+  --charcoal-900: 22 26 34;
+  --accent-300: 231 205 143;
+  --accent-400: 217 180 102;
+  --accent-500: 199 154 67;
+  --glow: 167 158 240; /* lavender halo */
+}
+
+[data-theme='obsidian'] {
+  --navy-50: 240 242 246;
+  --navy-100: 223 227 234;
+  --navy-800: 27 31 38;
+  --navy-900: 17 20 24;
+  --navy-950: 11 13 16;
+  --charcoal-700: 38 42 49;
+  --charcoal-800: 26 29 34;
+  --charcoal-900: 18 20 24;
+  --accent-300: 188 211 232;
+  --accent-400: 143 182 214;
+  --accent-500: 94 143 184;
+  --glow: 143 182 214; /* steel halo */
+}
+
+[data-theme='sepia'] {
+  --navy-50: 250 244 234;
+  --navy-100: 239 230 216;
+  --navy-800: 42 31 20;
+  --navy-900: 29 21 13;
+  --navy-950: 22 16 10;
+  --charcoal-700: 50 36 23;
+  --charcoal-800: 36 26 17;
+  --charcoal-900: 27 20 13;
+  --accent-300: 240 207 155;
+  --accent-400: 224 176 106;
+  --accent-500: 201 143 63;
+  --glow: 224 176 106; /* amber halo */
+}
+
+[data-theme='forest'] {
+  --navy-50: 240 247 243;
+  --navy-100: 217 236 227;
+  --navy-800: 22 38 31;
+  --navy-900: 14 26 21;
+  --navy-950: 10 20 16;
+  --charcoal-700: 32 48 41;
+  --charcoal-800: 22 35 29;
+  --charcoal-900: 16 26 22;
+  --accent-300: 231 215 154;
+  --accent-400: 205 187 110;
+  --accent-500: 168 149 69;
+  --glow: 122 200 160; /* mint halo */
+}
+
 :root {
   color-scheme: dark;
-  /* Consistent accent for native form controls (checkbox, date picker, …) */
-  accent-color: #d9b466;
+  /* Native form controls (checkbox, date picker, …) follow the accent */
+  accent-color: rgb(var(--accent-400));
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -19,10 +86,12 @@ body,
 
 body {
   margin: 0;
-  background-color: #0a0f1d;
-  background-image: radial-gradient(1200px 600px at 50% -10%, rgba(167, 158, 240, 0.1), transparent 60%),
-    radial-gradient(900px 500px at 100% 0%, rgba(231, 205, 143, 0.06), transparent 55%);
+  background-color: rgb(var(--navy-950));
+  background-image: radial-gradient(1200px 600px at 50% -10%, rgb(var(--glow) / 0.12), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgb(var(--accent-400) / 0.07), transparent 55%);
   background-attachment: fixed;
+  /* Smooth the palette change when switching themes */
+  transition: background-color 0.5s ease;
   color: #f5f2e9;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -42,7 +111,7 @@ body {
 
 /* Keyboard users always get a visible, on-brand focus ring */
 :focus-visible {
-  outline: 2px solid rgba(231, 205, 143, 0.6);
+  outline: 2px solid rgb(var(--accent-300) / 0.6);
   outline-offset: 2px;
   border-radius: 0.5rem;
 }
@@ -52,7 +121,7 @@ body {
 
 /* On-brand text selection */
 ::selection {
-  background: rgba(231, 205, 143, 0.25);
+  background: rgb(var(--accent-300) / 0.25);
   color: #fbfaf6;
 }
 

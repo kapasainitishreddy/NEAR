@@ -33,3 +33,17 @@ export const KINDS = [
   { id: 'followup', label: 'Follow-ups' },
   { id: 'review', label: 'Reviews' },
 ]
+
+// Theme gallery. `swatch`/`accent`/`glow` are hex mirrors of the CSS-var
+// palettes in index.css, used to paint the live preview chips in Settings.
+export const THEMES = [
+  { id: 'midnight', label: 'Midnight', bg: '#0a0f1d', surface: '#161a22', accent: '#d9b466', glow: '#a79ef0' },
+  { id: 'obsidian', label: 'Obsidian', bg: '#0b0d10', surface: '#121418', accent: '#8fb6d6', glow: '#8fb6d6' },
+  { id: 'sepia', label: 'Sepia', bg: '#16100a', surface: '#1b140d', accent: '#e0b06a', glow: '#e0b06a' },
+  { id: 'forest', label: 'Forest', bg: '#0a1410', surface: '#101a16', accent: '#cdbb6e', glow: '#7ac8a0' },
+]
+
+export const DEFAULT_THEME = 'midnight'
+export function isValidTheme(id) {
+  return THEMES.some((t) => t.id === id)
+}

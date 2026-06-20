@@ -4,28 +4,30 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Calm, premium palette
+        // Theme-aware tokens (channels live in CSS vars, set per data-theme).
+        // navy = canvas/background, charcoal = raised surfaces, gold = accent.
         navy: {
-          50: '#eef1f8',
-          100: '#d7def0',
-          800: '#16203b',
-          900: '#0e1628',
-          950: '#0a0f1d',
+          50: 'rgb(var(--navy-50) / <alpha-value>)',
+          100: 'rgb(var(--navy-100) / <alpha-value>)',
+          800: 'rgb(var(--navy-800) / <alpha-value>)',
+          900: 'rgb(var(--navy-900) / <alpha-value>)',
+          950: 'rgb(var(--navy-950) / <alpha-value>)',
         },
         charcoal: {
-          700: '#2a2f3a',
-          800: '#1f242e',
-          900: '#161a22',
+          700: 'rgb(var(--charcoal-700) / <alpha-value>)',
+          800: 'rgb(var(--charcoal-800) / <alpha-value>)',
+          900: 'rgb(var(--charcoal-900) / <alpha-value>)',
         },
+        gold: {
+          300: 'rgb(var(--accent-300) / <alpha-value>)',
+          400: 'rgb(var(--accent-400) / <alpha-value>)',
+          500: 'rgb(var(--accent-500) / <alpha-value>)',
+        },
+        // Static accents that read well on every (dark) theme.
         ivory: {
           50: '#fbfaf6',
           100: '#f5f2e9',
           200: '#ece7d8',
-        },
-        gold: {
-          300: '#e7cd8f',
-          400: '#d9b466',
-          500: '#c79a43',
         },
         lavender: {
           300: '#c3bdf2',
@@ -52,9 +54,9 @@ export default {
         serif: ['"Newsreader"', 'Georgia', 'ui-serif', 'serif'],
       },
       boxShadow: {
-        soft: '0 6px 24px -8px rgba(10, 15, 29, 0.35)',
-        card: '0 2px 10px -4px rgba(10, 15, 29, 0.25)',
-        glow: '0 0 0 1px rgba(231, 205, 143, 0.18), 0 10px 40px -12px rgba(231, 205, 143, 0.25)',
+        soft: '0 6px 24px -8px rgba(0, 0, 0, 0.45)',
+        card: '0 2px 10px -4px rgba(0, 0, 0, 0.3)',
+        glow: '0 0 0 1px rgb(var(--accent-300) / 0.18), 0 10px 40px -12px rgb(var(--accent-300) / 0.3)',
       },
       borderRadius: {
         xl2: '1.25rem',

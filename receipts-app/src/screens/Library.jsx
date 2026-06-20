@@ -4,6 +4,7 @@ import TopBar from '../components/TopBar.jsx'
 import { Chip, EmptyState, Input } from '../components/ui.jsx'
 import ItemCard from '../components/ItemCard.jsx'
 import { SearchIcon } from '../components/icons.jsx'
+import { EmptyLibraryArt, SearchArt } from '../components/illustrations.jsx'
 import { KINDS, STATUSES } from '../lib/constants.js'
 import { isDue } from '../lib/format.js'
 import { getCategory } from '../lib/scriptTemplates.js'
@@ -92,7 +93,7 @@ export default function Library() {
 
       {filtered.length === 0 ? (
         <EmptyState
-          emoji={all.length === 0 ? '📭' : '🔍'}
+          art={all.length === 0 ? <EmptyLibraryArt /> : <SearchArt />}
           title={all.length === 0 ? 'Your library is empty' : 'No matches'}
           subtitle={
             all.length === 0

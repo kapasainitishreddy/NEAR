@@ -17,6 +17,7 @@ import {
   buildSampleScripts,
 } from '../lib/sampleData.js'
 import { tapSuccess, tapWarning } from '../lib/haptics.js'
+import { THEMES, DEFAULT_THEME, isValidTheme } from '../lib/constants.js'
 
 const AppContext = createContext(null)
 
@@ -63,6 +64,18 @@ export function AppProvider({ children }) {
   useEffect(() => {
     if (!settings) return
     document.documentElement.classList.toggle('reduce-motion', !!settings.reduceMotion)
+  }, [settings])
+
+  // ---- Theme --------------------------------------------------------------
+  // Drive the active palette via a data-theme attribute on <html> and keep the
+  // browser/native theme-color meta in sync with the canvas colour.
+  useEffect(() => {
+    if (!settings) return
+    const theme = isValidTheme(settings.theme) ? settings.theme : DEFAULT_THEME
+    document.documentElement.dataset.theme = theme
+    const meta = document.querySelector('meta[name="theme-color"]')
+    const swatch = THEMES.find((t) => t.id === theme)
+    if (meta && swatch) meta.setAttribute('content', swatch.bg)
   }, [settings])
 
   // ---- Toast --------------------------------------------------------------
@@ -194,7 +207,7 @@ export function AppProvider({ children }) {
     setScripts([])
     setDecisions([])
     setRules([])
-    setSettings({ onboarded: false, demoLoaded: false, reduceMotion: false, name: '' })
+    setSettings({ onboarded: false, demoLoaded: false, reduceMotion: false, name: '', theme: DEFAULT_THEME })
   }, [])
 
   const value = useMemo(
@@ -203,7 +216,7 @@ export function AppProvider({ children }) {
       scripts,
       decisions,
       rules,
-      settings: settings || { onboarded: false, demoLoaded: false, reduceMotion: false, name: '' },
+      settings: settings || { onboarded: false, demoLoaded: false, reduceMotion: false, name: '', theme: DEFAULT_THEME },
       toast,
       showToast,
       updateSettings,

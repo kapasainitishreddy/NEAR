@@ -24,6 +24,7 @@ const DEFAULT_SETTINGS = {
   demoLoaded: false,
   reduceMotion: false,
   name: '',
+  theme: 'midnight',
 }
 
 async function read(key, fallback) {
@@ -98,6 +99,7 @@ export async function exportAll() {
       demoLoaded: settings.demoLoaded,
       reduceMotion: settings.reduceMotion,
       name: settings.name || '',
+      theme: settings.theme || 'midnight',
     },
   }
 }

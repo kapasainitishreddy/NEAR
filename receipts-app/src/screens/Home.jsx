@@ -6,6 +6,7 @@ import TopBar from '../components/TopBar.jsx'
 import { Button, Card, EmptyState, SafetyNote } from '../components/ui.jsx'
 import ItemCard from '../components/ItemCard.jsx'
 import { ScriptIcon, ReceiptIcon, ClockIcon, PlusIcon } from '../components/icons.jsx'
+import { CalmPageArt } from '../components/illustrations.jsx'
 import { isDue, isUpcoming, fmtRelative } from '../lib/format.js'
 
 function greeting() {
@@ -113,7 +114,7 @@ export default function Home() {
 
       {empty && (
         <EmptyState
-          emoji="🌅"
+          art={<CalmPageArt />}
           title="A calm, blank page"
           subtitle="Nothing here yet. Write your first calm script, or record the reasoning behind a decision."
           action={

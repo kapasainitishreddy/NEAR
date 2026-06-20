@@ -1,9 +1,60 @@
 import { useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import { useApp } from '../context/AppContext.jsx'
 import TopBar from '../components/TopBar.jsx'
 import { Button, Card, Field, Input, SafetyNote } from '../components/ui.jsx'
 import { ConfirmModal } from '../components/Modal.jsx'
-import { DownloadIcon, UploadIcon, TrashIcon, LockIcon } from '../components/icons.jsx'
+import { DownloadIcon, UploadIcon, TrashIcon, LockIcon, CheckIcon } from '../components/icons.jsx'
+import { THEMES } from '../lib/constants.js'
+
+function ThemePicker({ value, onChange }) {
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      {THEMES.map((t) => {
+        const active = value === t.id
+        return (
+          <button
+            key={t.id}
+            onClick={() => onChange(t.id)}
+            className={`relative overflow-hidden rounded-2xl border p-3 text-left transition ${
+              active ? 'border-gold-400/50' : 'border-white/[0.08] hover:border-white/20'
+            }`}
+            style={{ background: t.bg }}
+            aria-label={`${t.label} theme`}
+            aria-pressed={active}
+          >
+            {/* miniature canvas preview */}
+            <div
+              className="pointer-events-none absolute inset-0 opacity-90"
+              style={{
+                backgroundImage: `radial-gradient(120px 70px at 80% -10%, ${t.glow}33, transparent 60%)`,
+              }}
+            />
+            <div className="relative flex items-center gap-2">
+              <span
+                className="h-7 w-7 rounded-lg shadow-inner"
+                style={{ background: t.surface, border: '1px solid rgba(255,255,255,0.08)' }}
+              />
+              <span className="h-7 w-7 rounded-full" style={{ background: t.accent }} />
+              {active && (
+                <motion.span
+                  layoutId="themeCheck"
+                  className="ml-auto grid h-6 w-6 place-items-center rounded-full"
+                  style={{ background: t.accent, color: t.bg }}
+                >
+                  <CheckIcon className="h-3.5 w-3.5" />
+                </motion.span>
+              )}
+            </div>
+            <div className="relative mt-3 font-serif text-base" style={{ color: '#f5f2e9' }}>
+              {t.label}
+            </div>
+          </button>
+        )
+      })}
+    </div>
+  )
+}
 
 function Row({ title, desc, children }) {
   return (
@@ -83,6 +134,15 @@ export default function Settings() {
             </div>
           ))}
         </div>
+      </Card>
+
+      {/* Appearance */}
+      <h2 className="mb-3 px-1 font-serif text-lg text-ivory-50">Appearance</h2>
+      <Card className="mb-5">
+        <ThemePicker value={settings.theme} onChange={(theme) => updateSettings({ theme })} />
+        <p className="mt-3 px-1 text-xs text-white/40">
+          Themes change the whole app instantly. Your choice stays on this device.
+        </p>
       </Card>
 
       {/* Personalize */}

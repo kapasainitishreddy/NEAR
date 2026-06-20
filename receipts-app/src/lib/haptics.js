@@ -74,3 +74,35 @@ export async function shareText({ title, text }) {
     return 'failed'
   }
 }
+
+// Share (or, as a fallback, download) a generated image Blob.
+// Returns 'shared' | 'downloaded' | 'failed'.
+export async function shareImage({ blob, filename = 'receipt.png', title, text }) {
+  if (!blob) return 'failed'
+  const file = new File([blob], filename, { type: 'image/png' })
+
+  // Native + modern browsers: share the file through the OS sheet.
+  if (typeof navigator !== 'undefined' && navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title, text })
+      return 'shared'
+    } catch (err) {
+      if (err?.name === 'AbortError') return 'shared'
+    }
+  }
+
+  // Fallback: trigger a download of the PNG.
+  try {
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+    return 'downloaded'
+  } catch {
+    return 'failed'
+  }
+}

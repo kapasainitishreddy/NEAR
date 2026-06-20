@@ -108,16 +108,29 @@ export function Select({ className = '', children, ...props }) {
 }
 
 // ---- Empty state ----------------------------------------------------------
-export function EmptyState({ emoji = '✨', title, subtitle, action }) {
+// Pass `art` (an illustration component/node) for the premium look, or fall
+// back to an `emoji`. The artwork gently floats for a touch of life.
+export function EmptyState({ emoji = '✨', art, title, subtitle, action }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="card flex flex-col items-center px-6 py-12 text-center"
+      className="card flex flex-col items-center px-6 py-10 text-center"
     >
-      <div className="mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-b from-white/10 to-white/[0.02] text-3xl">
-        {emoji}
-      </div>
+      {art ? (
+        <motion.div
+          aria-hidden="true"
+          className="mb-4 h-36 w-48"
+          animate={{ y: [0, -6, 0] }}
+          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          {art}
+        </motion.div>
+      ) : (
+        <div className="mb-4 grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-b from-white/10 to-white/[0.02] text-3xl">
+          {emoji}
+        </div>
+      )}
       <h3 className="font-serif text-xl text-ivory-50">{title}</h3>
       {subtitle && <p className="mt-2 max-w-xs text-sm leading-relaxed text-white/45">{subtitle}</p>}
       {action && <div className="mt-5">{action}</div>}

@@ -26,6 +26,14 @@ database, no analytics, and no tracking**.
 - **Decision Receipt creator** — capture title, final decision, options, main
   reason, pros, cons, risks, feelings, evidence, who influenced you, what would
   change your mind, a note to future-you, review date, and category.
+- **Clarity score** — an animated ring shows how thoroughly a decision is
+  thought through, live as you write and on the saved receipt.
+- **Share as a receipt** — turn any item into a beautiful "torn paper receipt"
+  image (rendered on-device with `<canvas>`) to save or share.
+- **Theme gallery** — four hand-tuned palettes (Midnight · Obsidian · Sepia ·
+  Forest) that recolour the whole app instantly.
+- **Hand-drawn empty states** — illustrated, gently animated line art instead
+  of plain placeholders.
 - **Library** — every saved item with **search** and **filters** by kind
   (scripts / receipts / favorites / follow-ups / reviews) and status.
 - **Review reminders** — set a review date; due items surface on Home.
