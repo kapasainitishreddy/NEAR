@@ -8,6 +8,7 @@ import ItemCard from '../components/ItemCard.jsx'
 import { ScriptIcon, ReceiptIcon, ClockIcon, PlusIcon, ChartIcon, CoinIcon, SettingsIcon } from '../components/icons.jsx'
 import { CalmPageArt } from '../components/illustrations.jsx'
 import CoinFlipModal from '../components/CoinFlipModal.jsx'
+import AnimatedNumber from '../components/AnimatedNumber.jsx'
 import { isDue, isUpcoming, fmtRelative } from '../lib/format.js'
 
 function greeting() {
@@ -23,7 +24,9 @@ function StatTile({ Icon, label, value, accent, onClick }) {
       <div className={`mb-3 grid h-9 w-9 place-items-center rounded-xl ${accent}`}>
         <Icon className="h-5 w-5" />
       </div>
-      <div className="font-serif text-2xl text-ivory-50">{value}</div>
+      <div className="font-serif text-2xl text-ivory-50">
+        <AnimatedNumber value={value} />
+      </div>
       <div className="text-xs text-white/45">{label}</div>
     </Card>
   )
@@ -63,7 +66,12 @@ export default function Home() {
   return (
     <>
       <TopBar
-        title={name ? `${greeting()}, ${name}.` : `${greeting()}.`}
+        title={
+          <span>
+            {greeting()}
+            {name ? <span className="text-gradient">, {name}</span> : ''}.
+          </span>
+        }
         subtitle="Save what you decided. Say what you need."
         right={
           <div className="flex items-center gap-1">
@@ -81,10 +89,12 @@ export default function Home() {
       <div className="mb-5 grid grid-cols-2 gap-3">
         <motion.button
           whileTap={{ scale: 0.97 }}
+          whileHover={{ y: -2 }}
           onClick={() => navigate('/script')}
-          className="card flex flex-col items-start gap-3 !p-4 text-left hover:bg-white/[0.06]"
+          className="card group relative overflow-hidden flex flex-col items-start gap-3 !p-4 text-left"
         >
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-lavender-500/15 text-lavender-300">
+          <div className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-lavender-500/20 blur-2xl transition group-hover:bg-lavender-500/30" />
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-lavender-400/30 to-lavender-500/10 text-lavender-300">
             <ScriptIcon className="h-5 w-5" />
           </div>
           <div>
@@ -94,10 +104,12 @@ export default function Home() {
         </motion.button>
         <motion.button
           whileTap={{ scale: 0.97 }}
+          whileHover={{ y: -2 }}
           onClick={() => navigate('/receipt')}
-          className="card flex flex-col items-start gap-3 !p-4 text-left hover:bg-white/[0.06]"
+          className="card group relative overflow-hidden flex flex-col items-start gap-3 !p-4 text-left"
         >
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gold-500/15 text-gold-300">
+          <div className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-gold-500/20 blur-2xl transition group-hover:bg-gold-500/30" />
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-gold-300/30 to-gold-500/10 text-gold-300">
             <ReceiptIcon className="h-5 w-5" />
           </div>
           <div>
@@ -215,7 +227,7 @@ export default function Home() {
       {recent.length > 0 && (
         <section className="mb-6">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-serif text-lg text-ivory-50">Recent</h2>
+            <h2 className="section-title">Recent</h2>
             <button onClick={() => navigate('/library')} className="text-sm text-gold-300/80 hover:text-gold-300">
               See all
             </button>

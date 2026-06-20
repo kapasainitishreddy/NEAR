@@ -140,6 +140,20 @@ body {
   }
   .card {
     @apply rounded-3xl glass shadow-card;
+    position: relative;
+  }
+  /* A soft top sheen on every card for a premium, lit-from-above feel */
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 38%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
   }
   .input-base {
     @apply w-full rounded-2xl bg-white/[0.04] border border-white/[0.08] px-4 py-3 text-ivory-50
@@ -151,6 +165,22 @@ body {
   }
   .pill {
     @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium;
+  }
+  /* Gold gradient text for hero headings */
+  .text-gradient {
+    background: linear-gradient(180deg, rgb(var(--accent-300)), rgb(var(--accent-500)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  /* A small accent bar before section titles */
+  .section-title {
+    @apply flex items-center gap-2 font-serif text-lg text-ivory-50;
+  }
+  .section-title::before {
+    content: '';
+    @apply h-4 w-1 rounded-full;
+    background: linear-gradient(180deg, rgb(var(--accent-300)), rgb(var(--accent-500)));
   }
 }
 
