@@ -45,5 +45,11 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Receipts uses the microphone only when you tap the mic to dictate a note. Your speech is processed on-device and never uploaded.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Receipts uses speech recognition only when you tap the mic to dictate, so you can speak instead of type.</string>
 </dict>
 </plist>

@@ -39,3 +39,8 @@ desktop.ini
 .idea
 .vscode/*
 !.vscode/extensions.json
+
+# Android signing (never commit secrets)
+android/keystore.properties
+*.jks
+*.keystore
