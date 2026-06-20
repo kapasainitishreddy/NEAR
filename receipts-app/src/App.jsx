@@ -11,6 +11,8 @@ import Library from './screens/Library.jsx'
 import Rules from './screens/Rules.jsx'
 import Settings from './screens/Settings.jsx'
 import DetailView from './screens/DetailView.jsx'
+import Insights from './screens/Insights.jsx'
+import LockScreen from './components/LockScreen.jsx'
 
 function Splash() {
   return (
@@ -57,10 +59,19 @@ function Page({ children }) {
 }
 
 export default function App() {
-  const { loading, settings } = useApp()
+  const { loading, settings, locked } = useApp()
   const location = useLocation()
 
   if (loading || !settings) return <Splash />
+
+  // App lock gate — before anything else once it's been set up.
+  if (locked) {
+    return (
+      <MotionConfig reducedMotion={settings.reduceMotion ? 'always' : 'user'}>
+        <LockScreen />
+      </MotionConfig>
+    )
+  }
 
   // Gate the app behind onboarding until completed.
   if (!settings.onboarded && location.pathname !== '/onboarding') {
@@ -84,6 +95,7 @@ export default function App() {
             <Route path="/library" element={<Page><Library /></Page>} />
             <Route path="/rules" element={<Page><Rules /></Page>} />
             <Route path="/settings" element={<Page><Settings /></Page>} />
+            <Route path="/insights" element={<Page><Insights /></Page>} />
             <Route path="/view/:type/:id" element={<Page><DetailView /></Page>} />
             <Route path="*" element={<Navigate to="/home" replace />} />
           </Routes>

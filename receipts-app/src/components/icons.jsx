@@ -119,6 +119,24 @@ export const ShareIcon = (p) => (
     <path d="M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" />
   </svg>
 )
+export const MicIcon = (p) => (
+  <svg {...base} {...p}>
+    <rect x="9" y="3" width="6" height="11" rx="3" />
+    <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+  </svg>
+)
+export const ChartIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M4 20V4M20 20H4" />
+    <path d="M8 16l3-4 3 2 4-6" />
+  </svg>
+)
+export const CoinIcon = (p) => (
+  <svg {...base} {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v10M9.6 9.6h3.1a1.7 1.7 0 0 1 0 3.4H9.6h3.4a1.7 1.7 0 0 1 0 3.4" />
+  </svg>
+)
 export const EditIcon = (p) => (
   <svg {...base} {...p}>
     <path d="M12 20h9" />

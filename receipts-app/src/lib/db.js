@@ -25,6 +25,9 @@ const DEFAULT_SETTINGS = {
   reduceMotion: false,
   name: '',
   theme: 'midnight',
+  lockEnabled: false,
+  pinHash: '',
+  values: [],
 }
 
 async function read(key, fallback) {
@@ -51,6 +54,20 @@ export async function saveCollection(name, items) {
   return write(KEYS[name], items)
 }
 
+// Text fields we track for the "what changed" revision diff.
+const TEXT_KEYS = [
+  'content', 'finalDecision', 'optionsConsidered', 'mainReason', 'pros', 'cons',
+  'risks', 'evidence', 'feelings', 'influencedBy', 'changeMind', 'futureMeNote', 'premortem',
+]
+
+export function snapshotText(item = {}) {
+  return TEXT_KEYS.filter((k) => item[k] && String(item[k]).trim())
+    .map((k) => String(item[k]).trim())
+    .join('\n')
+}
+
+const HISTORY_LIMIT = 8
+
 export async function upsertItem(name, item) {
   const items = await getCollection(name)
   const now = new Date().toISOString()
@@ -59,7 +76,18 @@ export async function upsertItem(name, item) {
     const created = { ...item, createdAt: item.createdAt || now, updatedAt: now }
     return { items: [created, ...items], item: created }
   }
-  const updated = { ...items[idx], ...item, updatedAt: now }
+  const prev = items[idx]
+  const updated = { ...prev, ...item, updatedAt: now }
+  // Record a revision snapshot when the text actually changed.
+  const before = snapshotText(prev)
+  const after = snapshotText(updated)
+  if (before && before !== after) {
+    const history = Array.isArray(prev.history) ? prev.history.slice() : []
+    history.push({ at: prev.updatedAt || now, text: before })
+    updated.history = history.slice(-HISTORY_LIMIT)
+  } else {
+    updated.history = prev.history || []
+  }
   const next = [...items]
   next[idx] = updated
   return { items: next, item: updated }
@@ -100,6 +128,9 @@ export async function exportAll() {
       reduceMotion: settings.reduceMotion,
       name: settings.name || '',
       theme: settings.theme || 'midnight',
+      lockEnabled: !!settings.lockEnabled,
+      pinHash: settings.pinHash || '',
+      values: Array.isArray(settings.values) ? settings.values : [],
     },
   }
 }

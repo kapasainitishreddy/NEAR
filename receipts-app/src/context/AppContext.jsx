@@ -34,7 +34,11 @@ export function AppProvider({ children }) {
   const [rules, setRules] = useState([])
   const [settings, setSettings] = useState(null)
   const [toast, setToast] = useState(null)
+  const [unlocked, setUnlocked] = useState(false)
   const toastTimer = useRef(null)
+
+  const unlock = useCallback(() => setUnlocked(true), [])
+  const lockNow = useCallback(() => setUnlocked(false), [])
 
   // ---- Initial load -------------------------------------------------------
   useEffect(() => {
@@ -207,8 +211,13 @@ export function AppProvider({ children }) {
     setScripts([])
     setDecisions([])
     setRules([])
-    setSettings({ onboarded: false, demoLoaded: false, reduceMotion: false, name: '', theme: DEFAULT_THEME })
+    setUnlocked(false)
+    setSettings({ onboarded: false, demoLoaded: false, reduceMotion: false, name: '', theme: DEFAULT_THEME, lockEnabled: false, pinHash: '', values: [] })
   }, [])
+
+  const fallbackSettings = { onboarded: false, demoLoaded: false, reduceMotion: false, name: '', theme: DEFAULT_THEME, lockEnabled: false, pinHash: '', values: [] }
+  const effectiveSettings = settings || fallbackSettings
+  const locked = !!(effectiveSettings.lockEnabled && effectiveSettings.pinHash && !unlocked)
 
   const value = useMemo(
     () => ({
@@ -216,8 +225,11 @@ export function AppProvider({ children }) {
       scripts,
       decisions,
       rules,
-      settings: settings || { onboarded: false, demoLoaded: false, reduceMotion: false, name: '', theme: DEFAULT_THEME },
+      settings: effectiveSettings,
       toast,
+      locked,
+      unlock,
+      lockNow,
       showToast,
       updateSettings,
       saveTo,
@@ -234,8 +246,11 @@ export function AppProvider({ children }) {
       scripts,
       decisions,
       rules,
-      settings,
+      effectiveSettings,
       toast,
+      locked,
+      unlock,
+      lockNow,
       showToast,
       updateSettings,
       saveTo,

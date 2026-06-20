@@ -4,14 +4,19 @@ import { useApp } from '../context/AppContext.jsx'
 import TopBar from '../components/TopBar.jsx'
 import { Button, Card, StatusBadge, Select, SafetyNote } from '../components/ui.jsx'
 import { ConfirmModal } from '../components/Modal.jsx'
-import { CopyIcon, TrashIcon, StarIcon, ClockIcon, ShareIcon, EditIcon } from '../components/icons.jsx'
-import { STATUSES } from '../lib/constants.js'
-import { fmtDate, isDue } from '../lib/format.js'
+import { CopyIcon, TrashIcon, StarIcon, ClockIcon, ShareIcon, EditIcon, ChartIcon } from '../components/icons.jsx'
+import { STATUSES, reversibilityMeta, outcomeMeta } from '../lib/constants.js'
+import { fmtDate, fmtRelative, isDue } from '../lib/format.js'
 import { getCategory } from '../lib/scriptTemplates.js'
 import { shareText } from '../lib/haptics.js'
 import { clarityScore } from '../lib/clarity.js'
+import { snapshotText } from '../lib/db.js'
+import { diffWords, hasChanges } from '../lib/diff.js'
+import { matrixTotals, matrixIsMeaningful } from '../components/DecisionMatrix.jsx'
 import ClarityRing from '../components/ClarityRing.jsx'
+import BalanceScale from '../components/BalanceScale.jsx'
 import ShareCardModal from '../components/ShareCardModal.jsx'
+import OutcomeModal from '../components/OutcomeModal.jsx'
 
 const DECISION_FIELDS = [
   ['finalDecision', 'Final decision'],
@@ -24,6 +29,7 @@ const DECISION_FIELDS = [
   ['feelings', 'Feelings at the time'],
   ['influencedBy', 'Who influenced this'],
   ['changeMind', 'What would change my mind'],
+  ['premortem', 'Pre-mortem'],
   ['futureMeNote', 'Note to future me'],
 ]
 
@@ -33,6 +39,8 @@ export default function DetailView() {
   const { scripts, decisions, saveTo, deleteFrom, showToast } = useApp()
   const [confirm, setConfirm] = useState(false)
   const [cardOpen, setCardOpen] = useState(false)
+  const [outcomeOpen, setOutcomeOpen] = useState(false)
+  const [showDiff, setShowDiff] = useState(false)
 
   const collection = type === 'script' ? 'scripts' : 'decisions'
   const item = useMemo(
@@ -55,13 +63,16 @@ export default function DetailView() {
   }
 
   const isScript = item.type === 'script'
-
   const patch = (p) => saveTo(collection, { ...item, ...p })
+
+  // A sealed "note to future me" stays hidden until the review date arrives.
+  const noteSealed = !isScript && item.sealNote && item.reviewDate && !isDue(item.reviewDate)
+  const visibleFields = DECISION_FIELDS.filter(([k]) => item[k] && !(k === 'futureMeNote' && noteSealed))
 
   const asText = () =>
     isScript
       ? item.content
-      : DECISION_FIELDS.filter(([k]) => item[k]).map(([k, label]) => `${label}: ${item[k]}`).join('\n\n')
+      : visibleFields.map(([k, label]) => `${label}: ${item[k]}`).join('\n\n')
 
   const copy = async () => {
     try {
@@ -79,6 +90,20 @@ export default function DetailView() {
   }
 
   const due = isDue(item.reviewDate)
+  const rev = reversibilityMeta(item.reversibility)
+  const outcome = outcomeMeta(item.outcome)
+  const decideByDue = item.decideBy && !item.outcome
+  const matrix = item.matrix && matrixIsMeaningful(item.matrix) ? item.matrix : null
+  const totals = matrix ? matrixTotals(matrix) : []
+  const winner = totals.reduce((a, b) => (b.total > (a?.total ?? -1) ? b : a), null)
+
+  // Revision diff (latest vs previous saved version)
+  const diffTokens = useMemo(() => {
+    if (!item.history?.length) return null
+    const prev = item.history[item.history.length - 1].text
+    const tokens = diffWords(prev, snapshotText(item))
+    return hasChanges(tokens) ? tokens : null
+  }, [item])
 
   return (
     <>
@@ -103,7 +128,7 @@ export default function DetailView() {
         </div>
       )}
 
-      {/* Clarity score — only meaningful for decision receipts */}
+      {/* Clarity score — decisions only */}
       {!isScript && (
         <Card className="mb-4 !p-4">
           {(() => {
@@ -119,19 +144,52 @@ export default function DetailView() {
         </Card>
       )}
 
+      {/* Outcome / calibration — decisions only */}
+      {!isScript && (
+        <Card className="mb-4 !p-4">
+          {outcome ? (
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{outcome.emoji}</span>
+              <div className="min-w-0 flex-1">
+                <div className="font-medium text-ivory-50">Outcome: {outcome.label}</div>
+                {item.outcomeNote && <p className="text-sm text-white/50">{item.outcomeNote}</p>}
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setOutcomeOpen(true)}>
+                Change
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <span className="text-xl">🎯</span>
+              <p className="flex-1 text-sm text-white/55">
+                {due ? 'This is due for review — how did it turn out?' : 'Record how this turned out to build your calibration.'}
+              </p>
+              <Button size="sm" onClick={() => setOutcomeOpen(true)}>
+                Record
+              </Button>
+            </div>
+          )}
+        </Card>
+      )}
+
       {/* Status + review controls */}
       <Card className="mb-4 !p-4">
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={item.status} />
+          {rev && <span className={`pill ${rev.tone}`}>{rev.emoji} {rev.label}</span>}
           {item.reviewDate && (
             <span className={`pill ${due ? 'bg-gold-500/15 text-gold-300' : 'bg-white/[0.04] text-white/45'}`}>
               <ClockIcon className="h-3.5 w-3.5" />
               {due ? 'Review due' : `Review ${fmtDate(item.reviewDate)}`}
             </span>
           )}
-          <span className="ml-auto text-xs text-white/35">Updated {fmtDate(item.updatedAt)}</span>
+          {decideByDue && (
+            <span className={`pill ${isDue(item.decideBy) ? 'bg-red-500/15 text-red-300' : 'bg-lavender-500/15 text-lavender-300'}`}>
+              ⏱️ Decide {fmtRelative(item.decideBy)}
+            </span>
+          )}
         </div>
-        <div className="mt-3">
+        <div className="mt-3 flex items-center gap-2">
           <Select value={item.status} onChange={(e) => patch({ status: e.target.value })}>
             {STATUSES.map((s) => (
               <option key={s.id} value={s.id}>
@@ -140,24 +198,136 @@ export default function DetailView() {
             ))}
           </Select>
         </div>
+        <div className="mt-2 text-right text-xs text-white/35">Updated {fmtDate(item.updatedAt)}</div>
       </Card>
+
+      {/* Values compass */}
+      {!isScript && (item.valuesHonored?.length || item.valuesCost?.length) ? (
+        <Card className="mb-4 !p-4">
+          <div className="label-base">Values</div>
+          {item.valuesHonored?.length > 0 && (
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <span className="text-xs text-emerald-300">Honored</span>
+              {item.valuesHonored.map((v) => (
+                <span key={v} className="pill bg-emerald-500/15 text-emerald-300">{v}</span>
+              ))}
+            </div>
+          )}
+          {item.valuesCost?.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-white/45">Cost</span>
+              {item.valuesCost.map((v) => (
+                <span key={v} className="pill bg-white/[0.05] text-white/55">{v}</span>
+              ))}
+            </div>
+          )}
+        </Card>
+      ) : null}
+
+      {/* Decision matrix result */}
+      {matrix && winner && (
+        <Card className="mb-4 !p-4">
+          <div className="label-base">Decision matrix</div>
+          <div className="space-y-2">
+            {totals
+              .filter((t) => t.opt.trim())
+              .sort((a, b) => b.total - a.total)
+              .map((t) => (
+                <div key={t.i}>
+                  <div className="mb-1 flex justify-between text-sm">
+                    <span className="text-ivory-50">
+                      {winner.i === t.i ? '👑 ' : ''}
+                      {t.opt}
+                    </span>
+                    <span className="text-white/45">{t.pct}%</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-white/[0.06]">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-gold-300 to-gold-500"
+                      style={{ width: `${t.pct}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+          </div>
+        </Card>
+      )}
 
       {/* Body */}
       {isScript ? (
-        <Card className="mb-4">
-          <div className="whitespace-pre-wrap font-serif text-[15px] leading-relaxed text-ivory-100/90">
-            {item.content}
-          </div>
-        </Card>
+        <>
+          <Card className="mb-4">
+            <div className="whitespace-pre-wrap font-serif text-[15px] leading-relaxed text-ivory-100/90">
+              {item.content}
+            </div>
+          </Card>
+          {item.branches?.length > 0 && (
+            <Card className="mb-4 !p-4">
+              <div className="label-base">If they react… 🌿</div>
+              <div className="space-y-3">
+                {item.branches.map((b, i) => (
+                  <div key={i}>
+                    <div className="text-sm font-medium text-gold-300">{b.trigger}</div>
+                    <p className="mt-0.5 whitespace-pre-wrap text-[15px] leading-relaxed text-ivory-100/90">
+                      {b.reply}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+        </>
       ) : (
         <div className="mb-4 space-y-3">
-          {DECISION_FIELDS.filter(([k]) => item[k]).map(([k, label]) => (
+          {visibleFields.map(([k, label]) => (
             <Card key={k} className="!p-4">
               <div className="label-base">{label}</div>
               <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-ivory-100/90">{item[k]}</p>
             </Card>
           ))}
+
+          {/* Pros vs cons balance */}
+          {(item.pros || item.cons) && (
+            <Card className="!p-4">
+              <div className="label-base">The balance</div>
+              <BalanceScale pros={item.pros} cons={item.cons} />
+            </Card>
+          )}
+
+          {/* Sealed letter to future-me */}
+          {noteSealed && (
+            <Card className="!p-5 text-center">
+              <div className="mb-2 text-3xl">🔒</div>
+              <h3 className="font-serif text-lg text-ivory-50">A sealed letter to future-you</h3>
+              <p className="mx-auto mt-1 max-w-xs text-sm text-white/50">
+                Your note unseals on {fmtDate(item.reviewDate)} ({fmtRelative(item.reviewDate)}). No peeking.
+              </p>
+            </Card>
+          )}
         </div>
+      )}
+
+      {/* What changed */}
+      {diffTokens && (
+        <Card className="mb-4 !p-4">
+          <button onClick={() => setShowDiff((s) => !s)} className="flex w-full items-center justify-between">
+            <span className="label-base !mb-0">What changed since last edit</span>
+            <span className="text-sm text-gold-300/80">{showDiff ? 'Hide' : 'Show'}</span>
+          </button>
+          {showDiff && (
+            <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-white/70">
+              {diffTokens.map((t, i) =>
+                t.type === 'same' ? (
+                  <span key={i}>{t.value}</span>
+                ) : t.type === 'add' ? (
+                  <span key={i} className="rounded bg-emerald-500/20 text-emerald-200">{t.value}</span>
+                ) : (
+                  <span key={i} className="rounded bg-red-500/15 text-red-300/80 line-through">{t.value}</span>
+                )
+              )}
+            </p>
+          )}
+        </Card>
       )}
 
       <div className="mb-4 space-y-2">
@@ -183,6 +353,11 @@ export default function DetailView() {
             <TrashIcon />
           </Button>
         </div>
+        {!isScript && (
+          <Button variant="ghost" className="w-full" onClick={() => navigate('/insights')}>
+            <ChartIcon className="h-4 w-4" /> See your insights
+          </Button>
+        )}
       </div>
 
       <SafetyNote>
@@ -203,7 +378,20 @@ export default function DetailView() {
         confirmLabel="Delete"
       />
 
-      <ShareCardModal open={cardOpen} onClose={() => setCardOpen(false)} item={item} />
+      <ShareCardModal
+        open={cardOpen}
+        onClose={() => setCardOpen(false)}
+        item={noteSealed ? { ...item, futureMeNote: '' } : item}
+      />
+      <OutcomeModal
+        open={outcomeOpen}
+        onClose={() => setOutcomeOpen(false)}
+        item={item}
+        onSave={(p) => {
+          patch(p)
+          showToast('Outcome recorded')
+        }}
+      />
     </>
   )
 }

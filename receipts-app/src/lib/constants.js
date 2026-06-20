@@ -47,3 +47,52 @@ export const DEFAULT_THEME = 'midnight'
 export function isValidTheme(id) {
   return THEMES.some((t) => t.id === id)
 }
+
+// Outcome of a decision, recorded at review time — powers the calibration score
+// and pattern insights. Ordered worst → best for scoring.
+export const OUTCOMES = [
+  { id: 'regret', label: 'Regret', emoji: '😞', score: 0, tone: 'text-red-300 bg-red-500/15' },
+  { id: 'mixed', label: 'Mixed', emoji: '😐', score: 0.5, tone: 'text-gold-300 bg-gold-500/15' },
+  { id: 'relief', label: 'Relief', emoji: '😌', score: 1, tone: 'text-emerald-300 bg-emerald-500/15' },
+]
+
+export function outcomeMeta(id) {
+  return OUTCOMES.find((o) => o.id === id) || null
+}
+
+// Reversibility — Bezos' "one-way vs two-way doors".
+export const REVERSIBILITY = [
+  {
+    id: 'reversible',
+    label: 'Reversible',
+    emoji: '🔄',
+    hint: 'A two-way door — you can undo this. Decide quickly.',
+    tone: 'text-emerald-300 bg-emerald-500/15',
+  },
+  {
+    id: 'irreversible',
+    label: 'Hard to undo',
+    emoji: '🚪',
+    hint: 'A one-way door — hard to reverse. Take your time.',
+    tone: 'text-gold-300 bg-gold-500/15',
+  },
+]
+export function reversibilityMeta(id) {
+  return REVERSIBILITY.find((r) => r.id === id) || null
+}
+
+// Starter set of core values for the Values Compass (users can add their own).
+export const VALUE_SUGGESTIONS = [
+  'Honesty',
+  'Security',
+  'Freedom',
+  'Growth',
+  'Family',
+  'Health',
+  'Kindness',
+  'Ambition',
+  'Peace',
+  'Adventure',
+  'Loyalty',
+  'Creativity',
+]

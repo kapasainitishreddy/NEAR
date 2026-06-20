@@ -1,12 +1,13 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useApp } from '../context/AppContext.jsx'
 import TopBar from '../components/TopBar.jsx'
 import { Button, Card, EmptyState, SafetyNote } from '../components/ui.jsx'
 import ItemCard from '../components/ItemCard.jsx'
-import { ScriptIcon, ReceiptIcon, ClockIcon, PlusIcon } from '../components/icons.jsx'
+import { ScriptIcon, ReceiptIcon, ClockIcon, PlusIcon, ChartIcon, CoinIcon, SettingsIcon } from '../components/icons.jsx'
 import { CalmPageArt } from '../components/illustrations.jsx'
+import CoinFlipModal from '../components/CoinFlipModal.jsx'
 import { isDue, isUpcoming, fmtRelative } from '../lib/format.js'
 
 function greeting() {
@@ -49,12 +50,31 @@ export default function Home() {
   )
 
   const empty = all.length === 0 && rules.length === 0
+  const [coinOpen, setCoinOpen] = useState(false)
+
+  const decideSoon = useMemo(
+    () =>
+      decisions
+        .filter((d) => d.decideBy && !d.outcome)
+        .sort((a, b) => new Date(a.decideBy) - new Date(b.decideBy)),
+    [decisions]
+  )
 
   return (
     <>
       <TopBar
         title={name ? `${greeting()}, ${name}.` : `${greeting()}.`}
         subtitle="Save what you decided. Say what you need."
+        right={
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/insights')} aria-label="Insights">
+              <ChartIcon />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => navigate('/settings')} aria-label="Settings">
+              <SettingsIcon />
+            </Button>
+          </div>
+        }
       />
 
       {/* Quick actions */}
@@ -111,6 +131,53 @@ export default function Home() {
           onClick={() => navigate('/library')}
         />
       </div>
+
+      {/* Decide-by deadlines */}
+      {decideSoon.length > 0 && (
+        <section className="mb-6">
+          <h2 className="mb-3 flex items-center gap-2 font-serif text-lg text-ivory-50">
+            <span>⏱️</span> Waiting on a decision
+          </h2>
+          <div className="space-y-3">
+            {decideSoon.slice(0, 3).map((d) => {
+              const overdue = isDue(d.decideBy)
+              return (
+                <Card
+                  key={d.id}
+                  interactive
+                  onClick={() => navigate(`/view/decision/${d.id}`)}
+                  className="!p-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg">{overdue ? '⚠️' : '🗳️'}</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-medium text-ivory-50">{d.title}</div>
+                      <div className={`text-xs ${overdue ? 'text-red-300' : 'text-white/45'}`}>
+                        {overdue ? 'Decide now — ' : 'Decide '}
+                        {fmtRelative(d.decideBy)}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              )
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Flip a coin */}
+      <button
+        onClick={() => setCoinOpen(true)}
+        className="card mb-6 flex w-full items-center gap-3 !p-4 text-left transition hover:bg-white/[0.06]"
+      >
+        <div className="grid h-10 w-10 place-items-center rounded-xl bg-gold-500/15 text-gold-300">
+          <CoinIcon className="h-5 w-5" />
+        </div>
+        <div>
+          <div className="font-semibold text-ivory-50">Flip for a small choice</div>
+          <div className="text-xs text-white/45">Let your gut reaction reveal the answer</div>
+        </div>
+      </button>
 
       {empty && (
         <EmptyState
@@ -178,6 +245,8 @@ export default function Home() {
         This is a writing and reflection tool, not legal, medical, financial, or therapy advice. Review before
         sending or acting.
       </SafetyNote>
+
+      <CoinFlipModal open={coinOpen} onClose={() => setCoinOpen(false)} />
     </>
   )
 }

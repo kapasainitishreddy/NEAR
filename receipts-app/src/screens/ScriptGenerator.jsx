@@ -13,14 +13,27 @@ import {
   generateScript,
   getCategory,
 } from '../lib/scriptTemplates.js'
+import RuleNudge from '../components/RuleNudge.jsx'
+import MicButton from '../components/MicButton.jsx'
+import CooldownModal from '../components/CooldownModal.jsx'
 import { uid } from '../lib/id.js'
 
 const blankInputs = { recipient: '', context: '', detail: '', name: '' }
 
+// Categories likely to be written in a charged moment — these get a cooldown.
+const HEATED = new Set(['apology', 'boundary', 'complaint', 'support', 'roommate', 'cancel'])
+
+// Default branches for "conversation rehearsal".
+const DEFAULT_BRANCHES = [
+  { trigger: 'If they push back', reply: '' },
+  { trigger: 'If they agree', reply: '' },
+  { trigger: 'If they get defensive', reply: '' },
+]
+
 export default function ScriptGenerator() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { scripts, saveTo, showToast } = useApp()
+  const { scripts, rules, saveTo, showToast } = useApp()
 
   const existing = useMemo(() => scripts.find((s) => s.id === id), [scripts, id])
 
@@ -33,6 +46,8 @@ export default function ScriptGenerator() {
   const [status, setStatus] = useState('draft')
   const [favorite, setFavorite] = useState(false)
   const [reviewDate, setReviewDate] = useState('')
+  const [branches, setBranches] = useState(DEFAULT_BRANCHES)
+  const [cooldownOpen, setCooldownOpen] = useState(false)
   const [step, setStep] = useState(1) // 1 = compose, 2 = refine
 
   // Hydrate when editing an existing script.
@@ -47,6 +62,7 @@ export default function ScriptGenerator() {
     setStatus(existing.status || 'draft')
     setFavorite(!!existing.favorite)
     setReviewDate(existing.reviewDate ? existing.reviewDate.slice(0, 10) : '')
+    setBranches(existing.branches?.length ? existing.branches : DEFAULT_BRANCHES)
     setStep(2)
   }, [existing])
 
@@ -69,7 +85,7 @@ export default function ScriptGenerator() {
     if (versions) setContent(versions[t])
   }
 
-  const copy = async () => {
+  const doCopy = async () => {
     try {
       await navigator.clipboard.writeText(content)
       showToast('Copied to clipboard')
@@ -77,6 +93,15 @@ export default function ScriptGenerator() {
       showToast('Copy failed — select and copy manually', 'error')
     }
   }
+
+  // Heated messages get a brief cooldown before copying.
+  const copy = () => {
+    if (HEATED.has(categoryId)) setCooldownOpen(true)
+    else doCopy()
+  }
+
+  const setBranch = (i, patch) =>
+    setBranches((bs) => bs.map((b, idx) => (idx === i ? { ...b, ...patch } : b)))
 
   const save = async () => {
     const payload = {
@@ -92,6 +117,7 @@ export default function ScriptGenerator() {
       status,
       favorite,
       reviewDate: reviewDate ? new Date(reviewDate).toISOString() : '',
+      branches: branches.filter((b) => b.reply.trim()),
       createdAt: existing?.createdAt,
     }
     await saveTo('scripts', payload)
@@ -208,8 +234,16 @@ export default function ScriptGenerator() {
               ))}
             </div>
 
+            <RuleNudge rules={rules} context={`${cat.label} ${inputs.context} ${content}`} />
+
             <Field label="Your message — edit freely">
-              <Textarea rows={10} value={content} onChange={(e) => setContent(e.target.value)} />
+              <div className="flex items-start gap-2">
+                <Textarea rows={10} value={content} onChange={(e) => setContent(e.target.value)} />
+                <MicButton
+                  onResult={(t) => setContent((c) => (c ? `${c} ${t}` : t))}
+                  className="mt-1"
+                />
+              </div>
             </Field>
 
             <div className="flex gap-2">
@@ -227,6 +261,32 @@ export default function ScriptGenerator() {
                 Reset edits
               </Button>
             </div>
+
+            {/* Conversation rehearsal — pre-draft replies to likely reactions */}
+            <Card className="space-y-3">
+              <div>
+                <h2 className="font-serif text-lg text-ivory-50">Rehearse their reply 🌿</h2>
+                <p className="mt-0.5 text-sm text-white/45">
+                  Pre-write your calm response to how they might react — so you’re never caught off guard.
+                </p>
+              </div>
+              {branches.map((b, i) => (
+                <Field key={i} label={b.trigger}>
+                  <div className="flex items-start gap-2">
+                    <Textarea
+                      rows={2}
+                      placeholder="Your calm reply…"
+                      value={b.reply}
+                      onChange={(e) => setBranch(i, { reply: e.target.value })}
+                    />
+                    <MicButton
+                      onResult={(t) => setBranch(i, { reply: b.reply ? `${b.reply} ${t}` : t })}
+                      className="mt-1"
+                    />
+                  </div>
+                </Field>
+              ))}
+            </Card>
 
             <Card className="space-y-4">
               <Field label="Title">
@@ -259,6 +319,13 @@ export default function ScriptGenerator() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <CooldownModal
+        open={cooldownOpen}
+        onClose={() => setCooldownOpen(false)}
+        text={content}
+        onProceed={doCopy}
+      />
     </>
   )
 }

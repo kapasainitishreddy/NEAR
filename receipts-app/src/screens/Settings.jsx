@@ -2,10 +2,12 @@ import { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useApp } from '../context/AppContext.jsx'
 import TopBar from '../components/TopBar.jsx'
-import { Button, Card, Field, Input, SafetyNote } from '../components/ui.jsx'
+import { Button, Card, Chip, Field, Input, SafetyNote } from '../components/ui.jsx'
 import { ConfirmModal } from '../components/Modal.jsx'
-import { DownloadIcon, UploadIcon, TrashIcon, LockIcon, CheckIcon } from '../components/icons.jsx'
-import { THEMES } from '../lib/constants.js'
+import { DownloadIcon, UploadIcon, TrashIcon, LockIcon, CheckIcon, ShareIcon } from '../components/icons.jsx'
+import { THEMES, VALUE_SUGGESTIONS } from '../lib/constants.js'
+import PinSetupModal from '../components/PinSetupModal.jsx'
+import OperatingManualModal from '../components/OperatingManualModal.jsx'
 
 function ThemePicker({ value, onChange }) {
   return (
@@ -85,6 +87,27 @@ export default function Settings() {
   } = useApp()
   const fileRef = useRef(null)
   const [confirm, setConfirm] = useState(null) // 'clear' | 'reset' | 'demo'
+  const [pinOpen, setPinOpen] = useState(false)
+  const [manualOpen, setManualOpen] = useState(false)
+  const [newValue, setNewValue] = useState('')
+
+  const coreValues = settings.values || []
+  const addValue = (v) => {
+    const val = v.trim()
+    if (!val || coreValues.includes(val)) return
+    updateSettings({ values: [...coreValues, val].slice(0, 12) })
+    setNewValue('')
+  }
+  const removeValue = (v) => updateSettings({ values: coreValues.filter((x) => x !== v) })
+
+  const toggleLock = () => {
+    if (settings.lockEnabled) {
+      updateSettings({ lockEnabled: false, pinHash: '' })
+      showToast('App lock turned off')
+    } else {
+      setPinOpen(true)
+    }
+  }
 
   const hasDemo = [...scripts, ...decisions, ...rules].some((i) => i.demo)
   const total = scripts.length + decisions.length + rules.length
@@ -146,7 +169,7 @@ export default function Settings() {
       </Card>
 
       {/* Personalize */}
-      <Card className="mb-5">
+      <Card className="mb-5 space-y-4">
         <Field label="Your name (optional)" hint="Used only to greet you on the Home screen. Never leaves this device.">
           <Input
             value={settings.name || ''}
@@ -155,6 +178,45 @@ export default function Settings() {
             autoComplete="off"
           />
         </Field>
+
+        {/* Values compass */}
+        <div>
+          <div className="label-base">Your core values 🧭</div>
+          <p className="-mt-0.5 mb-2 text-xs text-white/40">
+            Tag decisions with the values they honor or cost.
+          </p>
+          {coreValues.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-2">
+              {coreValues.map((v) => (
+                <button
+                  key={v}
+                  onClick={() => removeValue(v)}
+                  className="pill bg-emerald-500/15 text-emerald-300"
+                >
+                  {v} ✕
+                </button>
+              ))}
+            </div>
+          )}
+          <div className="mb-2 flex gap-2">
+            <Input
+              value={newValue}
+              onChange={(e) => setNewValue(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && addValue(newValue)}
+              placeholder="Add a value…"
+            />
+            <Button variant="secondary" onClick={() => addValue(newValue)} disabled={!newValue.trim()}>
+              Add
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {VALUE_SUGGESTIONS.filter((v) => !coreValues.includes(v)).slice(0, 6).map((v) => (
+              <Chip key={v} onClick={() => addValue(v)}>
+                + {v}
+              </Chip>
+            ))}
+          </div>
+        </div>
       </Card>
 
       {/* Preferences */}
@@ -174,9 +236,35 @@ export default function Settings() {
             />
           </button>
         </Row>
+        <Row title="App lock" desc={settings.lockEnabled ? 'PIN required to open' : 'Require a PIN to open'}>
+          <button
+            onClick={toggleLock}
+            className={`relative h-7 w-12 rounded-full transition ${
+              settings.lockEnabled ? 'bg-emerald-500/70' : 'bg-white/15'
+            }`}
+            aria-label="Toggle app lock"
+          >
+            <span
+              className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all ${
+                settings.lockEnabled ? 'left-6' : 'left-1'
+              }`}
+            />
+          </button>
+        </Row>
         <Row title="Stored on this device" desc={`${total} item${total === 1 ? '' : 's'} total`}>
           <span className="pill bg-white/[0.05] text-white/55">{total}</span>
         </Row>
+      </Card>
+
+      {/* Keepsakes */}
+      <h2 className="mb-3 px-1 font-serif text-lg text-ivory-50">Keepsakes</h2>
+      <Card className="mb-5">
+        <Button variant="secondary" className="w-full justify-start" onClick={() => setManualOpen(true)}>
+          <ShareIcon className="h-5 w-5" /> Create my Operating Manual
+        </Button>
+        <p className="mt-2 px-1 text-xs text-white/40">
+          A beautiful one-page poster of your rules and guiding principles.
+        </p>
       </Card>
 
       {/* Data management */}
@@ -261,6 +349,16 @@ export default function Settings() {
         body="Deletes all data and settings, then restarts onboarding. This cannot be undone."
         confirmLabel="Reset app"
       />
+
+      <PinSetupModal
+        open={pinOpen}
+        onClose={() => setPinOpen(false)}
+        onComplete={(pinHash) => {
+          updateSettings({ lockEnabled: true, pinHash })
+          showToast('App lock enabled')
+        }}
+      />
+      <OperatingManualModal open={manualOpen} onClose={() => setManualOpen(false)} />
     </>
   )
 }
