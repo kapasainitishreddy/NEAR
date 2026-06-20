@@ -7,6 +7,23 @@ set -euo pipefail
 OUT="videos-mp4"
 mkdir -p "$OUT"
 
+# Synthesize narration → /tmp/$1.wav. Prefers Piper (natural neural voice, set
+# PIPER_MODEL to an .onnx), and falls back to espeak-ng so it always produces audio.
+synth () {
+  local name="$1" narration="$2"
+  local text; text=$(tr '\n' ' ' < "$narration")
+  rm -f "/tmp/$name.wav"
+  if [ -n "${PIPER_MODEL:-}" ] && [ -f "${PIPER_MODEL}" ]; then
+    echo "$text" | python3 -m piper --model "$PIPER_MODEL" --output_file "/tmp/$name.wav" 2>/dev/null || \
+    echo "$text" | piper --model "$PIPER_MODEL" --output_file "/tmp/$name.wav" 2>/dev/null || true
+    [ -f "/tmp/$name.wav" ] && echo "   voice: piper"
+  fi
+  if [ ! -f "/tmp/$name.wav" ]; then
+    espeak-ng -f "$narration" -w "/tmp/$name.wav" -s 160 -p 45 2>/dev/null || true
+    [ -f "/tmp/$name.wav" ] && echo "   voice: espeak-ng (fallback)"
+  fi
+}
+
 make_one () {
   local name="$1" src="$2" narration="$3"
   [ -f "$src" ] || { echo "skip $name — missing $src"; return 0; }
@@ -19,7 +36,7 @@ make_one () {
 
   # Narrated MP4 (synth voiceover, padded/trimmed to the video length)
   if [ -f "$narration" ]; then
-    espeak-ng -f "$narration" -w "/tmp/$name.wav" -s 160 -p 45 || true
+    synth "$name" "$narration"
     if [ -f "/tmp/$name.wav" ]; then
       local dur
       dur=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$src")

@@ -26,11 +26,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install ffmpeg + espeak-ng
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg espeak-ng
+      - name: Install ffmpeg + TTS (Piper, espeak-ng fallback)
+        run: |
+          sudo apt-get update && sudo apt-get install -y ffmpeg espeak-ng python3-pip
+          pip3 install --user --quiet piper-tts || echo "piper install failed; will use espeak-ng"
+          mkdir -p "$HOME/piper"
+          base="https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium"
+          curl -fsSL -o "$HOME/piper/en_US-lessac-medium.onnx" "$base/en_US-lessac-medium.onnx" || true
+          curl -fsSL -o "$HOME/piper/en_US-lessac-medium.onnx.json" "$base/en_US-lessac-medium.onnx.json" || true
 
       - name: Build MP4s (+ narrated variants)
-        run: bash scripts/videos/make-mp4.sh
+        run: |
+          # Use the downloaded Piper voice if present; the script falls back to
+          # espeak-ng automatically when it isn't.
+          export PIPER_MODEL="$HOME/piper/en_US-lessac-medium.onnx"
+          export PATH="$HOME/.local/bin:$PATH"
+          bash scripts/videos/make-mp4.sh
 
       - name: Upload videos (artifact)
         uses: actions/upload-artifact@v4

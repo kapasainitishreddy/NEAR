@@ -36,9 +36,11 @@ To run locally (needs `ffmpeg` + `espeak-ng`):
 cd receipts-app && bash scripts/videos/make-mp4.sh   # → videos-mp4/
 ```
 
-> The CI narration uses `espeak-ng` (offline, robotic but reliable). For a
-> natural voice, swap in [Piper](https://github.com/rhasspy/piper) or the HeyGen
-> path below.
+> CI narration uses **[Piper](https://github.com/rhasspy/piper)** — a natural,
+> offline neural voice (`en_US-lessac-medium`) — and automatically falls back to
+> `espeak-ng` if the Piper install/download fails. Set `PIPER_MODEL` to a
+> different `.onnx` to change the voice. For an avatar/branded voice, use the
+> HeyGen path below.
 
 ## HeyGen HyperFrames (high-quality, hosted) — TODO
 
