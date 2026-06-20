@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useApp } from '../context/AppContext.jsx'
 import TopBar from '../components/TopBar.jsx'
 import { Button, Card, StatusBadge, Select, SafetyNote } from '../components/ui.jsx'
 import { ConfirmModal } from '../components/Modal.jsx'
-import { CopyIcon, TrashIcon, StarIcon, ClockIcon, ShareIcon, EditIcon, ChartIcon } from '../components/icons.jsx'
+import { CopyIcon, TrashIcon, StarIcon, ClockIcon, ShareIcon, EditIcon, ChartIcon, SpeakerIcon, StopIcon } from '../components/icons.jsx'
+import { speak, stopSpeaking, speechSupported } from '../lib/speech.js'
 import { STATUSES, reversibilityMeta, outcomeMeta } from '../lib/constants.js'
 import { fmtDate, fmtRelative, isDue } from '../lib/format.js'
 import { getCategory } from '../lib/scriptTemplates.js'
@@ -36,11 +37,14 @@ const DECISION_FIELDS = [
 export default function DetailView() {
   const { type, id } = useParams()
   const navigate = useNavigate()
-  const { scripts, decisions, saveTo, deleteFrom, showToast } = useApp()
+  const { scripts, decisions, settings, saveTo, deleteFrom, showToast } = useApp()
   const [confirm, setConfirm] = useState(false)
   const [cardOpen, setCardOpen] = useState(false)
   const [outcomeOpen, setOutcomeOpen] = useState(false)
   const [showDiff, setShowDiff] = useState(false)
+  const [speaking, setSpeaking] = useState(false)
+
+  useEffect(() => () => stopSpeaking(), [])
 
   const collection = type === 'script' ? 'scripts' : 'decisions'
   const item = useMemo(
@@ -87,6 +91,20 @@ export default function DetailView() {
     const result = await shareText({ title: item.title || 'Receipts', text: asText() })
     if (result === 'copied') showToast('Copied to clipboard')
     else if (result === 'failed') showToast('Could not share', 'error')
+  }
+
+  const listen = () => {
+    if (speaking) {
+      stopSpeaking()
+      setSpeaking(false)
+      return
+    }
+    setSpeaking(true)
+    speak(asText(), {
+      voiceURI: settings.speechVoice,
+      rate: settings.speechRate || 1,
+      onend: () => setSpeaking(false),
+    })
   }
 
   const due = isDue(item.reviewDate)
@@ -342,6 +360,12 @@ export default function DetailView() {
             <ShareIcon className="h-4 w-4" /> Share text
           </Button>
         </div>
+        {speechSupported() && (
+          <Button variant="secondary" className="w-full" onClick={listen}>
+            {speaking ? <StopIcon className="h-4 w-4" /> : <SpeakerIcon className="h-4 w-4" />}
+            {speaking ? 'Stop' : 'Listen'}
+          </Button>
+        )}
         <div className="flex gap-2">
           <Button
             className="flex-1"

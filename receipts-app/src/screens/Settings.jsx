@@ -1,13 +1,16 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useApp } from '../context/AppContext.jsx'
+import { usePurchases } from '../context/PurchaseContext.jsx'
 import TopBar from '../components/TopBar.jsx'
 import { Button, Card, Chip, Field, Input, SafetyNote } from '../components/ui.jsx'
 import { ConfirmModal } from '../components/Modal.jsx'
-import { DownloadIcon, UploadIcon, TrashIcon, LockIcon, CheckIcon, ShareIcon } from '../components/icons.jsx'
+import { DownloadIcon, UploadIcon, TrashIcon, LockIcon, CheckIcon, ShareIcon, SpeakerIcon } from '../components/icons.jsx'
 import { THEMES, VALUE_SUGGESTIONS } from '../lib/constants.js'
 import PinSetupModal from '../components/PinSetupModal.jsx'
 import OperatingManualModal from '../components/OperatingManualModal.jsx'
+import Paywall from '../components/Paywall.jsx'
+import { loadVoices, speak, speechSupported } from '../lib/speech.js'
 
 function ThemePicker({ value, onChange }) {
   return (
@@ -85,11 +88,18 @@ export default function Settings() {
     factoryReset,
     showToast,
   } = useApp()
+  const { pro, configured } = usePurchases()
   const fileRef = useRef(null)
   const [confirm, setConfirm] = useState(null) // 'clear' | 'reset' | 'demo'
   const [pinOpen, setPinOpen] = useState(false)
   const [manualOpen, setManualOpen] = useState(false)
+  const [paywallOpen, setPaywallOpen] = useState(false)
   const [newValue, setNewValue] = useState('')
+  const [voices, setVoices] = useState([])
+
+  useEffect(() => {
+    if (speechSupported()) loadVoices().then(setVoices)
+  }, [])
 
   const coreValues = settings.values || []
   const addValue = (v) => {
@@ -159,6 +169,29 @@ export default function Settings() {
         </div>
       </Card>
 
+      {/* Receipts Pro */}
+      <button
+        onClick={() => setPaywallOpen(true)}
+        className="card group relative mb-5 w-full overflow-hidden !p-5 text-left"
+      >
+        <div className="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-gold-400/20 blur-3xl" />
+        <div className="flex items-center gap-3">
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-b from-gold-300 to-gold-500 text-xl text-navy-950">
+            ✦
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <h2 className="font-serif text-lg text-ivory-50">Receipts Pro</h2>
+              {pro && <span className="pill bg-emerald-500/15 text-emerald-300">Active</span>}
+            </div>
+            <p className="text-sm text-white/55">
+              {pro ? 'Thanks for supporting Receipts 💜' : 'Unlock themes, insights, app lock & more.'}
+            </p>
+          </div>
+          {!pro && <span className="text-gold-300">→</span>}
+        </div>
+      </button>
+
       {/* Appearance */}
       <h2 className="mb-3 px-1 font-serif text-lg text-ivory-50">Appearance</h2>
       <Card className="mb-5">
@@ -218,6 +251,56 @@ export default function Settings() {
           </div>
         </div>
       </Card>
+
+      {/* Voice */}
+      {speechSupported() && (
+        <>
+          <h2 className="mb-3 px-1 font-serif text-lg text-ivory-50">Voice</h2>
+          <Card className="mb-5 space-y-4">
+            <p className="-mb-1 text-sm text-white/45">
+              Hear your scripts and receipts read aloud — synthesised on-device, nothing uploaded.
+            </p>
+            <Field label="Voice">
+              <select
+                className="input-base appearance-none pr-10"
+                value={settings.speechVoice || ''}
+                onChange={(e) => updateSettings({ speechVoice: e.target.value })}
+              >
+                <option value="">Default ({voices[0]?.name || 'system'})</option>
+                {voices.map((v) => (
+                  <option key={v.voiceURI} value={v.voiceURI}>
+                    {v.name} {v.lang ? `· ${v.lang}` : ''}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <div>
+              <div className="label-base">Speed · {(settings.speechRate || 1).toFixed(1)}×</div>
+              <input
+                type="range"
+                min="0.6"
+                max="1.6"
+                step="0.1"
+                value={settings.speechRate || 1}
+                onChange={(e) => updateSettings({ speechRate: Number(e.target.value) })}
+                className="w-full accent-gold-400"
+              />
+            </div>
+            <Button
+              variant="secondary"
+              className="w-full"
+              onClick={() =>
+                speak('This is how your scripts will sound when read aloud.', {
+                  voiceURI: settings.speechVoice,
+                  rate: settings.speechRate || 1,
+                })
+              }
+            >
+              <SpeakerIcon className="h-5 w-5" /> Preview voice
+            </Button>
+          </Card>
+        </>
+      )}
 
       {/* Preferences */}
       <Card className="mb-5 divide-y divide-white/[0.06] !py-1">
@@ -359,6 +442,7 @@ export default function Settings() {
         }}
       />
       <OperatingManualModal open={manualOpen} onClose={() => setManualOpen(false)} />
+      <Paywall open={paywallOpen} onClose={() => setPaywallOpen(false)} />
     </>
   )
 }

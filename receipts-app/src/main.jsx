@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
 import App from './App.jsx'
 import { AppProvider } from './context/AppContext.jsx'
+import { PurchaseProvider } from './context/PurchaseContext.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { initNative } from './native.js'
 import './index.css'
@@ -12,7 +13,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <ErrorBoundary>
       <HashRouter>
         <AppProvider>
-          <App />
+          <PurchaseProvider>
+            <App />
+          </PurchaseProvider>
         </AppProvider>
       </HashRouter>
     </ErrorBoundary>

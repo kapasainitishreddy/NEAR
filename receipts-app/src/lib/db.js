@@ -28,6 +28,8 @@ const DEFAULT_SETTINGS = {
   lockEnabled: false,
   pinHash: '',
   values: [],
+  speechRate: 1,
+  speechVoice: '',
 }
 
 async function read(key, fallback) {
@@ -131,6 +133,8 @@ export async function exportAll() {
       lockEnabled: !!settings.lockEnabled,
       pinHash: settings.pinHash || '',
       values: Array.isArray(settings.values) ? settings.values : [],
+      speechRate: settings.speechRate || 1,
+      speechVoice: settings.speechVoice || '',
     },
   }
 }

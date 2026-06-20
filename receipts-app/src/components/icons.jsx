@@ -125,6 +125,17 @@ export const MicIcon = (p) => (
     <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
   </svg>
 )
+export const SpeakerIcon = (p) => (
+  <svg {...base} {...p}>
+    <path d="M4 9v6h4l5 4V5L8 9H4Z" />
+    <path d="M16 9a3.5 3.5 0 0 1 0 6M18.5 7a7 7 0 0 1 0 10" />
+  </svg>
+)
+export const StopIcon = (p) => (
+  <svg {...base} {...p}>
+    <rect x="6" y="6" width="12" height="12" rx="2" />
+  </svg>
+)
 export const ChartIcon = (p) => (
   <svg {...base} {...p}>
     <path d="M4 20V4M20 20H4" />
