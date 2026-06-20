@@ -1,0 +1,38 @@
+name: Render Videos (MP4 + voiceover)
+
+# Converts the committed WebM promo/demo into MP4 and a narrated MP4 variant.
+# Run it from the Actions tab (workflow_dispatch), or it runs automatically when
+# the videos or narration scripts change.
+on:
+  workflow_dispatch:
+  push:
+    branches: ['**']
+    paths:
+      - 'receipts-app/promo/**'
+      - 'receipts-app/demo/**'
+      - 'receipts-app/scripts/narration/**'
+      - 'receipts-app/scripts/videos/**'
+      - '.github/workflows/videos.yml'
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: receipts-app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install ffmpeg + espeak-ng
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg espeak-ng
+
+      - name: Build MP4s (+ narrated variants)
+        run: bash scripts/videos/make-mp4.sh
+
+      - name: Upload videos
+        uses: actions/upload-artifact@v4
+        with:
+          name: receipts-videos-mp4
+          path: receipts-app/video-out/*.mp4
+          if-no-files-found: error
