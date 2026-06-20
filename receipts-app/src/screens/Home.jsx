@@ -28,8 +28,9 @@ function StatTile({ Icon, label, value, accent, onClick }) {
 }
 
 export default function Home() {
-  const { scripts, decisions, rules } = useApp()
+  const { scripts, decisions, rules, settings } = useApp()
   const navigate = useNavigate()
+  const name = settings?.name?.trim()
 
   const all = useMemo(() => [...scripts, ...decisions], [scripts, decisions])
 
@@ -50,7 +51,10 @@ export default function Home() {
 
   return (
     <>
-      <TopBar title={`${greeting()}.`} subtitle="Save what you decided. Say what you need." />
+      <TopBar
+        title={name ? `${greeting()}, ${name}.` : `${greeting()}.`}
+        subtitle="Save what you decided. Say what you need."
+      />
 
       {/* Quick actions */}
       <div className="mb-5 grid grid-cols-2 gap-3">

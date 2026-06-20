@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { cn } from '../lib/cn.js'
+import { tapLight } from '../lib/haptics.js'
 
 // ---- Button ---------------------------------------------------------------
 export function Button({
@@ -36,9 +37,16 @@ export function Button({
 // ---- Card -----------------------------------------------------------------
 export function Card({ children, className = '', onClick, interactive = false }) {
   const Comp = interactive ? motion.button : motion.div
+  const handleClick = interactive
+    ? (e) => {
+        tapLight()
+        onClick?.(e)
+      }
+    : onClick
   return (
     <Comp
-      onClick={onClick}
+      onClick={handleClick}
+      type={interactive ? 'button' : undefined}
       whileTap={interactive ? { scale: 0.985 } : undefined}
       className={cn('card p-5 text-left w-full', interactive && 'hover:bg-white/[0.06] transition', className)}
     >

@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { useApp } from '../context/AppContext.jsx'
 import TopBar from '../components/TopBar.jsx'
-import { Button, Card, SafetyNote } from '../components/ui.jsx'
+import { Button, Card, Field, Input, SafetyNote } from '../components/ui.jsx'
 import { ConfirmModal } from '../components/Modal.jsx'
 import { DownloadIcon, UploadIcon, TrashIcon, LockIcon } from '../components/icons.jsx'
 
@@ -85,6 +85,18 @@ export default function Settings() {
         </div>
       </Card>
 
+      {/* Personalize */}
+      <Card className="mb-5">
+        <Field label="Your name (optional)" hint="Used only to greet you on the Home screen. Never leaves this device.">
+          <Input
+            value={settings.name || ''}
+            onChange={(e) => updateSettings({ name: e.target.value.slice(0, 40) })}
+            placeholder="What should we call you?"
+            autoComplete="off"
+          />
+        </Field>
+      </Card>
+
       {/* Preferences */}
       <Card className="mb-5 divide-y divide-white/[0.06] !py-1">
         <Row title="Reduce motion" desc="Calmer, minimal animations">
@@ -158,7 +170,9 @@ export default function Settings() {
         This is a writing and reflection tool, not legal, medical, financial, or therapy advice. Review before
         sending or acting.
       </SafetyNote>
-      <p className="px-1 text-center text-xs text-white/30">Receipts · local-first · v0.1.0</p>
+      <p className="px-1 text-center text-xs text-white/30">
+        Receipts · local-first · v{__APP_VERSION__}
+      </p>
 
       <ConfirmModal
         open={confirm === 'demo'}

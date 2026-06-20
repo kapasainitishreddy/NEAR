@@ -3,20 +3,11 @@ name: CI
 on:
   push:
     branches: ['**']
-    paths:
-      - 'receipts-app/**'
-      - '.github/workflows/ci.yml'
   pull_request:
-    paths:
-      - 'receipts-app/**'
-      - '.github/workflows/ci.yml'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: receipts-app
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,10 +17,9 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: receipts-app/package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
+      - name: Build web
         run: npm run build

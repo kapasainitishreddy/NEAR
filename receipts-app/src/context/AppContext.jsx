@@ -16,6 +16,7 @@ import {
   buildSampleRules,
   buildSampleScripts,
 } from '../lib/sampleData.js'
+import { tapSuccess, tapWarning } from '../lib/haptics.js'
 
 const AppContext = createContext(null)
 
@@ -56,11 +57,22 @@ export function AppProvider({ children }) {
     }
   }, [])
 
+  // ---- Reduced motion -----------------------------------------------------
+  // Mirror the preference onto <html> so plain CSS transitions/animations are
+  // dampened too (Framer Motion is handled separately via <MotionConfig>).
+  useEffect(() => {
+    if (!settings) return
+    document.documentElement.classList.toggle('reduce-motion', !!settings.reduceMotion)
+  }, [settings])
+
   // ---- Toast --------------------------------------------------------------
   const showToast = useCallback((message, kind = 'success') => {
     setToast({ message, kind, id: Date.now() })
     if (toastTimer.current) clearTimeout(toastTimer.current)
     toastTimer.current = setTimeout(() => setToast(null), 2600)
+    // Pair every bit of feedback with a matching haptic (no-op on the web).
+    if (kind === 'error') tapWarning()
+    else tapSuccess()
   }, [])
 
   // ---- Settings -----------------------------------------------------------
@@ -182,7 +194,7 @@ export function AppProvider({ children }) {
     setScripts([])
     setDecisions([])
     setRules([])
-    setSettings({ onboarded: false, demoLoaded: false, reduceMotion: false })
+    setSettings({ onboarded: false, demoLoaded: false, reduceMotion: false, name: '' })
   }, [])
 
   const value = useMemo(
@@ -191,7 +203,7 @@ export function AppProvider({ children }) {
       scripts,
       decisions,
       rules,
-      settings: settings || { onboarded: false, demoLoaded: false, reduceMotion: false },
+      settings: settings || { onboarded: false, demoLoaded: false, reduceMotion: false, name: '' },
       toast,
       showToast,
       updateSettings,

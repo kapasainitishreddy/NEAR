@@ -1,0 +1,92 @@
+name: Android build (cloud — no Android Studio)
+
+# Builds the Android app in the cloud on a Linux runner. The runner already has
+# the Android SDK, so you do NOT need Android Studio installed anywhere.
+#
+# - Every push: builds a DEBUG apk (no secrets needed) you can download from the
+#   run's "Artifacts" and install on a phone to test.
+# - To get a Play-ready signed .aab, add the four release secrets listed below
+#   and the job will also produce app-release.aab.
+
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch: # lets you run it manually from the Actions tab
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Java (required by Android Gradle Plugin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web + sync to native
+        run: npm run build:native
+
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: receipts-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+      # -------- Optional: signed release bundle for Google Play --------
+      # Add these repo secrets (Settings -> Secrets and variables -> Actions):
+      #   ANDROID_KEYSTORE_BASE64  - base64 of your upload-keystore.jks
+      #   ANDROID_KEYSTORE_PASSWORD
+      #   ANDROID_KEY_ALIAS
+      #   ANDROID_KEY_PASSWORD
+      # Create a keystore once with:
+      #   keytool -genkey -v -keystore upload-keystore.jks -keyalg RSA \
+      #     -keysize 2048 -validity 10000 -alias upload
+      #   base64 -w0 upload-keystore.jks   # paste into ANDROID_KEYSTORE_BASE64
+      - name: Decode keystore
+        if: ${{ env.HAS_KEYSTORE == 'true' }}
+        env:
+          HAS_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/app/upload-keystore.jks
+
+      - name: Build signed release bundle (.aab)
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          ./gradlew bundleRelease --no-daemon \
+            -Pandroid.injected.signing.store.file=app/upload-keystore.jks \
+            -Pandroid.injected.signing.store.password="$ANDROID_KEYSTORE_PASSWORD" \
+            -Pandroid.injected.signing.key.alias="$ANDROID_KEY_ALIAS" \
+            -Pandroid.injected.signing.key.password="$ANDROID_KEY_PASSWORD"
+
+      - name: Upload release bundle
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: receipts-release-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error

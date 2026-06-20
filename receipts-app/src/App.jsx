@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, MotionConfig } from 'framer-motion'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useApp } from './context/AppContext.jsx'
 import BottomNav from './components/BottomNav.jsx'
@@ -15,10 +15,22 @@ import DetailView from './screens/DetailView.jsx'
 function Splash() {
   return (
     <div className="flex h-full items-center justify-center">
-      <div className="animate-pulse text-center">
-        <div className="mx-auto mb-3 h-12 w-12 rounded-2xl bg-gradient-to-b from-gold-300 to-gold-500" />
-        <p className="font-serif text-lg text-white/70">Receipts</p>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="text-center"
+      >
+        <motion.div
+          animate={{ y: [0, -4, 0] }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+          className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-3xl bg-gradient-to-b from-gold-300 to-gold-500 text-3xl shadow-glow"
+        >
+          🧾
+        </motion.div>
+        <p className="font-serif text-xl tracking-tightish text-ivory-50">Receipts</p>
+        <p className="mt-1 text-sm text-white/40">Loading your private space…</p>
+      </motion.div>
     </div>
   )
 }
@@ -58,24 +70,26 @@ export default function App() {
   const hideNav = location.pathname === '/onboarding'
 
   return (
-    <div className="relative min-h-full">
-      <Toast />
-      <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
-          <Route path="/onboarding" element={<Page><Onboarding /></Page>} />
-          <Route path="/home" element={<Page><Home /></Page>} />
-          <Route path="/script" element={<Page><ScriptGenerator /></Page>} />
-          <Route path="/script/:id" element={<Page><ScriptGenerator /></Page>} />
-          <Route path="/receipt" element={<Page><ReceiptCreator /></Page>} />
-          <Route path="/receipt/:id" element={<Page><ReceiptCreator /></Page>} />
-          <Route path="/library" element={<Page><Library /></Page>} />
-          <Route path="/rules" element={<Page><Rules /></Page>} />
-          <Route path="/settings" element={<Page><Settings /></Page>} />
-          <Route path="/view/:type/:id" element={<Page><DetailView /></Page>} />
-          <Route path="*" element={<Navigate to="/home" replace />} />
-        </Routes>
-      </AnimatePresence>
-      {!hideNav && <BottomNav />}
-    </div>
+    <MotionConfig reducedMotion={settings.reduceMotion ? 'always' : 'user'}>
+      <div className="relative min-h-full">
+        <Toast />
+        <AnimatePresence mode="wait">
+          <Routes location={location} key={location.pathname}>
+            <Route path="/onboarding" element={<Page><Onboarding /></Page>} />
+            <Route path="/home" element={<Page><Home /></Page>} />
+            <Route path="/script" element={<Page><ScriptGenerator /></Page>} />
+            <Route path="/script/:id" element={<Page><ScriptGenerator /></Page>} />
+            <Route path="/receipt" element={<Page><ReceiptCreator /></Page>} />
+            <Route path="/receipt/:id" element={<Page><ReceiptCreator /></Page>} />
+            <Route path="/library" element={<Page><Library /></Page>} />
+            <Route path="/rules" element={<Page><Rules /></Page>} />
+            <Route path="/settings" element={<Page><Settings /></Page>} />
+            <Route path="/view/:type/:id" element={<Page><DetailView /></Page>} />
+            <Route path="*" element={<Navigate to="/home" replace />} />
+          </Routes>
+        </AnimatePresence>
+        {!hideNav && <BottomNav />}
+      </div>
+    </MotionConfig>
   )
 }

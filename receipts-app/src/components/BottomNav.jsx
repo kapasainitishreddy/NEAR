@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { cn } from '../lib/cn.js'
+import { tapLight } from '../lib/haptics.js'
 import { HomeIcon, ScriptIcon, ReceiptIcon, LibraryIcon, RulesIcon } from './icons.jsx'
 
 const TABS = [
@@ -16,7 +17,7 @@ export default function BottomNav() {
     <nav className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center pb-safe">
       <div className="pointer-events-auto mx-3 mb-2 flex w-full max-w-md items-center justify-between gap-1 rounded-3xl border border-white/[0.08] bg-charcoal-900/80 p-1.5 shadow-soft backdrop-blur-2xl">
         {TABS.map(({ to, label, Icon }) => (
-          <NavLink key={to} to={to} className="relative flex-1">
+          <NavLink key={to} to={to} onClick={tapLight} className="relative flex-1">
             {({ isActive }) => (
               <div
                 className={cn(

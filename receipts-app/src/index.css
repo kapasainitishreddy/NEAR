@@ -1,9 +1,14 @@
+@import './styles/fonts.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
   color-scheme: dark;
+  /* Consistent accent for native form controls (checkbox, date picker, …) */
+  accent-color: #d9b466;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html,
@@ -15,13 +20,40 @@ body,
 body {
   margin: 0;
   background-color: #0a0f1d;
-  background-image: radial-gradient(1200px 600px at 50% -10%, rgba(167, 158, 240, 0.10), transparent 60%),
+  background-image: radial-gradient(1200px 600px at 50% -10%, rgba(167, 158, 240, 0.1), transparent 60%),
     radial-gradient(900px 500px at 100% 0%, rgba(231, 205, 143, 0.06), transparent 55%);
   background-attachment: fixed;
   color: #f5f2e9;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   font-family: theme('fontFamily.sans');
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  /* Prevent iOS text auto-resize and rubber-band overscroll glow */
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none;
+}
+
+/* Serif headings get optical sizing + tighter tracking for an editorial feel */
+.font-serif {
+  font-optical-sizing: auto;
+  letter-spacing: -0.01em;
+}
+
+/* Keyboard users always get a visible, on-brand focus ring */
+:focus-visible {
+  outline: 2px solid rgba(231, 205, 143, 0.6);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* On-brand text selection */
+::selection {
+  background: rgba(231, 205, 143, 0.25);
+  color: #fbfaf6;
 }
 
 /* Hide scrollbars but keep scrolling (premium feel) */
@@ -51,6 +83,42 @@ body {
   .pill {
     @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium;
   }
+}
+
+/* A native-style select chevron so dropdowns look intentional on every OS */
+select.input-base {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-opacity='0.4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 1.1rem;
+}
+
+/* Date inputs: tint the native calendar icon so it reads on the dark canvas */
+input[type='date']::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.45;
+  cursor: pointer;
+}
+
+/* Respect the OS / in-app "reduce motion" preference. The `reduce-motion`
+ * class is toggled on <html> from Settings; the media query covers the OS. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
 }
 
 /* Safe-area padding for notched phones */

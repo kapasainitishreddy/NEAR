@@ -23,6 +23,7 @@ const DEFAULT_SETTINGS = {
   onboarded: false,
   demoLoaded: false,
   reduceMotion: false,
+  name: '',
 }
 
 async function read(key, fallback) {
@@ -92,7 +93,12 @@ export async function exportAll() {
     version: 1,
     exportedAt: new Date().toISOString(),
     data: { scripts, decisions, rules },
-    settings: { onboarded: settings.onboarded, demoLoaded: settings.demoLoaded, reduceMotion: settings.reduceMotion },
+    settings: {
+      onboarded: settings.onboarded,
+      demoLoaded: settings.demoLoaded,
+      reduceMotion: settings.reduceMotion,
+      name: settings.name || '',
+    },
   }
 }
 

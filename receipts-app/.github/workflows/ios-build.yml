@@ -1,0 +1,51 @@
+name: iOS build (cloud — no local Mac)
+
+# Builds the iOS app on a macOS cloud runner, so you don't need a Mac locally.
+# By default it does an UNSIGNED simulator build to prove the project compiles
+# (no Apple account or secrets needed). Producing an installable/submittable
+# .ipa still requires Apple signing — see the notes at the bottom.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['**']
+
+jobs:
+  ios:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build web + sync to native
+        run: npm run build:native
+
+      - name: CocoaPods install
+        working-directory: ios/App
+        run: pod install
+
+      - name: Compile app (unsigned, simulator)
+        working-directory: ios/App
+        run: |
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -sdk iphonesimulator \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      # -------- To build a submittable .ipa --------
+      # This needs an Apple Developer account and signing assets stored as
+      # secrets (distribution certificate .p12 + provisioning profile). The
+      # common approach is `xcodebuild -exportArchive` with an ExportOptions.plist,
+      # or a tool like fastlane match. See STORE.md for the full walkthrough.

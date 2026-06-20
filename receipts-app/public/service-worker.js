@@ -1,7 +1,7 @@
-// Minimal offline-first service worker for Receipts (PWA).
-// Caches the app shell so the tool keeps working offline.
+// Offline-first service worker for Receipts (PWA).
+// Caches the app shell + hashed build assets so the tool keeps working offline.
 // No user data is ever sent anywhere — this only caches static assets.
-const CACHE = 'receipts-shell-v1'
+const CACHE = 'receipts-shell-v2'
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -28,7 +28,12 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const { request } = event
   if (request.method !== 'GET') return
-  // Network-first for navigations, cache-first for assets.
+
+  const url = new URL(request.url)
+  if (url.origin !== self.location.origin) return // never touch cross-origin
+
+  // Network-first for navigations so users get the latest HTML when online,
+  // falling back to the cached shell offline.
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
@@ -41,7 +46,19 @@ self.addEventListener('fetch', (event) => {
     )
     return
   }
+
+  // Cache-first for static assets (hashed JS/CSS/fonts/icons). On a cache miss
+  // we fetch once and store it, so the next offline visit has everything.
   event.respondWith(
-    caches.match(request).then((cached) => cached || fetch(request))
+    caches.match(request).then((cached) => {
+      if (cached) return cached
+      return fetch(request).then((res) => {
+        if (res.ok && res.type === 'basic') {
+          const copy = res.clone()
+          caches.open(CACHE).then((c) => c.put(request, copy))
+        }
+        return res
+      })
+    })
   )
 })

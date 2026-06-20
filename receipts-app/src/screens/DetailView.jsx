@@ -4,10 +4,11 @@ import { useApp } from '../context/AppContext.jsx'
 import TopBar from '../components/TopBar.jsx'
 import { Button, Card, StatusBadge, Select, SafetyNote } from '../components/ui.jsx'
 import { ConfirmModal } from '../components/Modal.jsx'
-import { CopyIcon, TrashIcon, StarIcon, ClockIcon } from '../components/icons.jsx'
+import { CopyIcon, TrashIcon, StarIcon, ClockIcon, ShareIcon, EditIcon } from '../components/icons.jsx'
 import { STATUSES } from '../lib/constants.js'
 import { fmtDate, isDue } from '../lib/format.js'
 import { getCategory } from '../lib/scriptTemplates.js'
+import { shareText } from '../lib/haptics.js'
 
 const DECISION_FIELDS = [
   ['finalDecision', 'Final decision'],
@@ -53,16 +54,24 @@ export default function DetailView() {
 
   const patch = (p) => saveTo(collection, { ...item, ...p })
 
-  const copy = async () => {
-    const text = isScript
+  const asText = () =>
+    isScript
       ? item.content
       : DECISION_FIELDS.filter(([k]) => item[k]).map(([k, label]) => `${label}: ${item[k]}`).join('\n\n')
+
+  const copy = async () => {
     try {
-      await navigator.clipboard.writeText(text)
+      await navigator.clipboard.writeText(asText())
       showToast('Copied to clipboard')
     } catch {
       showToast('Copy failed', 'error')
     }
+  }
+
+  const share = async () => {
+    const result = await shareText({ title: item.title || 'Receipts', text: asText() })
+    if (result === 'copied') showToast('Copied to clipboard')
+    else if (result === 'failed') showToast('Could not share', 'error')
   }
 
   const due = isDue(item.reviewDate)
@@ -131,19 +140,26 @@ export default function DetailView() {
         </div>
       )}
 
-      <div className="mb-4 flex gap-2">
-        <Button variant="secondary" className="flex-1" onClick={copy}>
-          <CopyIcon className="h-4 w-4" /> Copy
-        </Button>
-        <Button
-          className="flex-1"
-          onClick={() => navigate(isScript ? `/script/${item.id}` : `/receipt/${item.id}`)}
-        >
-          Edit
-        </Button>
-        <Button variant="danger" size="icon" onClick={() => setConfirm(true)} aria-label="Delete">
-          <TrashIcon />
-        </Button>
+      <div className="mb-4 space-y-2">
+        <div className="flex gap-2">
+          <Button variant="secondary" className="flex-1" onClick={copy}>
+            <CopyIcon className="h-4 w-4" /> Copy
+          </Button>
+          <Button variant="secondary" className="flex-1" onClick={share}>
+            <ShareIcon className="h-4 w-4" /> Share
+          </Button>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            className="flex-1"
+            onClick={() => navigate(isScript ? `/script/${item.id}` : `/receipt/${item.id}`)}
+          >
+            <EditIcon className="h-4 w-4" /> Edit
+          </Button>
+          <Button variant="danger" size="icon" onClick={() => setConfirm(true)} aria-label="Delete">
+            <TrashIcon />
+          </Button>
+        </div>
       </div>
 
       <SafetyNote>
