@@ -4,7 +4,7 @@
 # Run from the receipts-app directory.
 set -euo pipefail
 
-OUT="video-out"
+OUT="videos-mp4"
 mkdir -p "$OUT"
 
 make_one () {

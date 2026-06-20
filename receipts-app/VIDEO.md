@@ -21,7 +21,9 @@ BASE=http://localhost:4319 node scripts/demo/record-demo.cjs
 
 WebM screen-captures have **no audio track**, so narration is added during MP4
 conversion. This runs in CI (`.github/workflows/videos.yml`) — open the Actions
-tab → "Render Videos" → Run, then download the `receipts-videos-mp4` artifact.
+tab → "Render Videos" → Run. The job **commits the MP4s back to the branch** in
+`receipts-app/videos-mp4/` (and also uploads them as a `receipts-videos-mp4`
+artifact).
 
 It produces, for each video:
 - `<name>.mp4` — silent, H.264 (universal playback)
@@ -31,7 +33,7 @@ It produces, for each video:
 To run locally (needs `ffmpeg` + `espeak-ng`):
 
 ```bash
-cd receipts-app && bash scripts/videos/make-mp4.sh   # → video-out/
+cd receipts-app && bash scripts/videos/make-mp4.sh   # → videos-mp4/
 ```
 
 > The CI narration uses `espeak-ng` (offline, robotic but reliable). For a
