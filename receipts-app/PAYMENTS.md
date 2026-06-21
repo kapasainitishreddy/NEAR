@@ -6,7 +6,9 @@ crippled before you're ready to monetise.
 
 ## How it works
 
-- **`src/config.js`** — paste your RevenueCat API keys + entitlement id here.
+- **`src/config.js`** — ships with **placeholder** keys (the `X…` values). They
+  are auto-detected as "not real", so the app stays fully unlocked with no errors
+  until you replace them with your actual RevenueCat keys.
 - **`src/lib/purchases.js`** — adapter that normalises the native (Capacitor)
   and web SDKs behind one interface (lazy-loaded).
 - **`src/context/PurchaseContext.jsx`** — exposes `{ pro, packages, buy, restore,

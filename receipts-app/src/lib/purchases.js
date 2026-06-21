@@ -2,7 +2,7 @@
 // small interface, lazy-imported so the web bundle stays lean and the app runs
 // even when billing isn't configured. Nothing here runs unless API keys are set.
 import { Capacitor } from '@capacitor/core'
-import { REVENUECAT, isPurchasesConfigured } from '../config.js'
+import { REVENUECAT, isPurchasesConfigured, resolvedApiKey } from '../config.js'
 
 let inited = false
 let webInstance = null
@@ -22,10 +22,8 @@ function appUserId() {
 }
 
 function platformKey() {
-  if (isNative()) {
-    return Capacitor.getPlatform() === 'ios' ? REVENUECAT.appleApiKey : REVENUECAT.googleApiKey
-  }
-  return REVENUECAT.webApiKey
+  // Placeholder-aware: returns '' while the keys are still the X… placeholders.
+  return resolvedApiKey(isNative() ? Capacitor.getPlatform() : 'web')
 }
 
 export async function initPurchases() {
