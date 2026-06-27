@@ -17,9 +17,19 @@ receive your content.
 
 ## Network use
 
-The app functions offline. The only optional network request is loading a web
-font for styling; this involves no personal data. Native builds bundle assets
-locally.
+By default the app functions offline and uploads nothing. A few **optional**
+features use the network only when you turn them on or tap them:
+
+- **AI Co-pilot** (if enabled): the specific text you’re working on is sent
+  through a secure proxy to an AI provider (e.g. Anthropic) to generate a
+  suggestion.
+- **Ask-for-advice polls** (if you create one): the decision text and options
+  you include are stored on the polling service so people you share the link
+  with can vote anonymously. Polls auto-expire.
+- **Purchases** (if you buy Pro): handled by the App Store / Google Play and
+  **RevenueCat**.
+- A web font may load for styling (no personal data). Native builds bundle
+  assets locally.
 
 ## Your data, your control
 
@@ -35,7 +45,11 @@ Receipts does not knowingly collect any data from anyone, including children.
 
 ## Third parties
 
-No data is shared with third parties because no data leaves your device.
+By default no data leaves your device. The optional features above are the only
+exceptions, and only when you use them: the AI provider (e.g. Anthropic) for the
+Co-pilot, the polling service for polls you create, and the App Store / Google
+Play / RevenueCat for purchases. See the full, current list at the hosted policy
+(`/privacy.html`).
 
 ## Changes
 

@@ -1,0 +1,11 @@
+# Netlify config for the Receipts web build.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Hash-router SPA — serve index.html for any unknown path (real files like
+# /privacy.html are served first, before this catch-all).
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
