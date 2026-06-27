@@ -10,6 +10,8 @@ import { CalmPageArt } from '../components/illustrations.jsx'
 import CoinFlipModal from '../components/CoinFlipModal.jsx'
 import AnimatedNumber from '../components/AnimatedNumber.jsx'
 import { isDue, isUpcoming, fmtRelative } from '../lib/format.js'
+import { dailyPrompt } from '../lib/prompts.js'
+import { computeStreak } from '../lib/gamification.js'
 
 function greeting() {
   const h = new Date().getHours()
@@ -54,6 +56,8 @@ export default function Home() {
 
   const empty = all.length === 0 && rules.length === 0
   const [coinOpen, setCoinOpen] = useState(false)
+  const prompt = useMemo(() => dailyPrompt(), [])
+  const streak = useMemo(() => computeStreak([...all, ...rules]), [all, rules])
 
   const decideSoon = useMemo(
     () =>
@@ -75,6 +79,14 @@ export default function Home() {
         subtitle="Save what you decided. Say what you need."
         right={
           <div className="flex items-center gap-1">
+            {streak > 1 && (
+              <span
+                className="pill mr-1 bg-gold-500/15 text-gold-300"
+                title={`${streak}-day reflection streak`}
+              >
+                🔥 {streak}
+              </span>
+            )}
             <Button variant="ghost" size="icon" onClick={() => navigate('/insights')} aria-label="Insights">
               <ChartIcon />
             </Button>
@@ -143,6 +155,22 @@ export default function Home() {
           onClick={() => navigate('/library')}
         />
       </div>
+
+      {/* Today — daily reflection prompt */}
+      {!empty && (
+        <Card className="mb-6 !p-5">
+          <div className="mb-1 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-lavender-300">
+            <span>✦</span> Today’s reflection
+          </div>
+          <p className="font-serif text-lg leading-snug text-ivory-50">{prompt}</p>
+          <button
+            onClick={() => navigate('/receipt')}
+            className="mt-3 text-sm font-medium text-gold-300/90 hover:text-gold-300"
+          >
+            Reflect on this →
+          </button>
+        </Card>
+      )}
 
       {/* Decide-by deadlines */}
       {decideSoon.length > 0 && (

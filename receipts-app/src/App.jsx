@@ -12,6 +12,7 @@ import Rules from './screens/Rules.jsx'
 import Settings from './screens/Settings.jsx'
 import DetailView from './screens/DetailView.jsx'
 import Insights from './screens/Insights.jsx'
+import Quiz from './screens/Quiz.jsx'
 import LockScreen from './components/LockScreen.jsx'
 
 function Splash() {
@@ -96,6 +97,7 @@ export default function App() {
             <Route path="/rules" element={<Page><Rules /></Page>} />
             <Route path="/settings" element={<Page><Settings /></Page>} />
             <Route path="/insights" element={<Page><Insights /></Page>} />
+            <Route path="/quiz" element={<Page><Quiz /></Page>} />
             <Route path="/view/:type/:id" element={<Page><DetailView /></Page>} />
             <Route path="*" element={<Navigate to="/home" replace />} />
           </Routes>

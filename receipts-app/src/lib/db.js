@@ -30,6 +30,7 @@ const DEFAULT_SETTINGS = {
   values: [],
   speechRate: 1,
   speechVoice: '',
+  decisionStyle: '',
 }
 
 async function read(key, fallback) {
@@ -135,6 +136,7 @@ export async function exportAll() {
       values: Array.isArray(settings.values) ? settings.values : [],
       speechRate: settings.speechRate || 1,
       speechVoice: settings.speechVoice || '',
+      decisionStyle: settings.decisionStyle || '',
     },
   }
 }
