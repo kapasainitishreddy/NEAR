@@ -1,0 +1,11 @@
+name = "receipts-ai-proxy"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+# Optional: lock CORS to your app's origin (recommended in production)
+# [vars]
+# ALLOWED_ORIGIN = "https://your-app.example.com"
+# MODEL = "claude-haiku-4-5"
+
+# Set your key as a secret (NOT here):
+#   npx wrangler secret put ANTHROPIC_API_KEY

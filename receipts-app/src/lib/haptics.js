@@ -48,11 +48,11 @@ export async function tapWarning() {
 
 // ---- Share ----------------------------------------------------------------
 // Returns 'shared' | 'copied' | 'failed' so callers can show the right toast.
-export async function shareText({ title, text }) {
+export async function shareText({ title, text, url }) {
   if (isNative()) {
     try {
       const { Share } = await import('@capacitor/share')
-      await Share.share({ title, text })
+      await Share.share({ title, text, ...(url ? { url } : {}) })
       return 'shared'
     } catch {
       /* user may have cancelled, or plugin missing — try web paths */
@@ -60,7 +60,7 @@ export async function shareText({ title, text }) {
   }
   if (typeof navigator !== 'undefined' && navigator.share) {
     try {
-      await navigator.share({ title, text })
+      await navigator.share({ title, text, ...(url ? { url } : {}) })
       return 'shared'
     } catch (err) {
       // AbortError = user dismissed the sheet; treat as a no-op, not a failure.
@@ -68,7 +68,7 @@ export async function shareText({ title, text }) {
     }
   }
   try {
-    await navigator.clipboard.writeText(text)
+    await navigator.clipboard.writeText(url ? `${text} ${url}` : text)
     return 'copied'
   } catch {
     return 'failed'

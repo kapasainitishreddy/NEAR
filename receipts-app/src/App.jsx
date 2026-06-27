@@ -13,6 +13,7 @@ import Settings from './screens/Settings.jsx'
 import DetailView from './screens/DetailView.jsx'
 import Insights from './screens/Insights.jsx'
 import Quiz from './screens/Quiz.jsx'
+import Poll from './screens/Poll.jsx'
 import LockScreen from './components/LockScreen.jsx'
 
 function Splash() {
@@ -74,12 +75,15 @@ export default function App() {
     )
   }
 
+  // Public routes anyone can open (e.g. a shared poll link) — no onboarding.
+  const isPublic = location.pathname.startsWith('/poll')
+
   // Gate the app behind onboarding until completed.
-  if (!settings.onboarded && location.pathname !== '/onboarding') {
+  if (!settings.onboarded && location.pathname !== '/onboarding' && !isPublic) {
     return <Navigate to="/onboarding" replace />
   }
 
-  const hideNav = location.pathname === '/onboarding'
+  const hideNav = location.pathname === '/onboarding' || isPublic
 
   return (
     <MotionConfig reducedMotion={settings.reduceMotion ? 'always' : 'user'}>
@@ -98,6 +102,7 @@ export default function App() {
             <Route path="/settings" element={<Page><Settings /></Page>} />
             <Route path="/insights" element={<Page><Insights /></Page>} />
             <Route path="/quiz" element={<Page><Quiz /></Page>} />
+            <Route path="/poll/:id" element={<Page><Poll /></Page>} />
             <Route path="/view/:type/:id" element={<Page><DetailView /></Page>} />
             <Route path="*" element={<Navigate to="/home" replace />} />
           </Routes>

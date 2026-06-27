@@ -8,6 +8,7 @@ import { CopyIcon, TrashIcon, StarIcon, ClockIcon, ShareIcon, EditIcon, ChartIco
 import { speak, stopSpeaking, speechSupported } from '../lib/speech.js'
 import { cancelForItem } from '../lib/notifications.js'
 import { adviceText, accountabilityText } from '../lib/social.js'
+import { createPoll, pollLink, isPollsConfigured } from '../lib/polls.js'
 import { STATUSES, reversibilityMeta, outcomeMeta } from '../lib/constants.js'
 import { fmtDate, fmtRelative, isDue } from '../lib/format.js'
 import { getCategory } from '../lib/scriptTemplates.js'
@@ -374,6 +375,22 @@ export default function DetailView() {
               variant="secondary"
               className="flex-1"
               onClick={async () => {
+                // With a polls backend: create a live poll and share its link.
+                if (isPollsConfigured()) {
+                  try {
+                    const { id } = await createPoll(item)
+                    const link = pollLink(id)
+                    const r = await shareText({
+                      title: 'What would you do?',
+                      text: `${adviceText(item)}\n\nVote here: ${link}`,
+                      url: link,
+                    })
+                    if (r === 'copied') showToast('Poll link copied')
+                    return
+                  } catch {
+                    /* fall back to plain text share below */
+                  }
+                }
                 const r = await shareText({ title: 'A decision I’m weighing', text: adviceText(item) })
                 if (r === 'copied') showToast('Copied — paste it to a friend')
               }}

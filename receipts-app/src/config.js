@@ -68,6 +68,20 @@ export function isAiConfigured() {
   return typeof AI.endpoint === 'string' && /^https?:\/\//.test(AI.endpoint)
 }
 
+// ---------------------------------------------------------------------------
+// Social backends (optional). Deploy workers/polls (see workers/README.md) and
+// paste its URL here to enable aggregated friend polls. Leave empty and
+// "Ask for advice" falls back to plain share text.
+// ---------------------------------------------------------------------------
+export const SOCIAL = {
+  pollsEndpoint: '', // e.g. 'https://receipts-polls.you.workers.dev'
+  webBaseUrl: '', // public URL of the hosted web app, for shareable poll links
+}
+
+export function isPollsConfigured() {
+  return typeof SOCIAL.pollsEndpoint === 'string' && /^https?:\/\//.test(SOCIAL.pollsEndpoint)
+}
+
 // Marketing copy for the paywall — shown regardless of configuration.
 export const PRO_BENEFITS = [
   { emoji: '🎨', title: 'Every theme', body: 'Unlock Obsidian, Sepia & Forest palettes.' },
