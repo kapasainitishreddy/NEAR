@@ -7,6 +7,7 @@ import { ConfirmModal } from '../components/Modal.jsx'
 import { CopyIcon, TrashIcon, StarIcon, ClockIcon, ShareIcon, EditIcon, ChartIcon, SpeakerIcon, StopIcon } from '../components/icons.jsx'
 import { speak, stopSpeaking, speechSupported } from '../lib/speech.js'
 import { cancelForItem } from '../lib/notifications.js'
+import { adviceText, accountabilityText } from '../lib/social.js'
 import { STATUSES, reversibilityMeta, outcomeMeta } from '../lib/constants.js'
 import { fmtDate, fmtRelative, isDue } from '../lib/format.js'
 import { getCategory } from '../lib/scriptTemplates.js'
@@ -366,6 +367,35 @@ export default function DetailView() {
             {speaking ? <StopIcon className="h-4 w-4" /> : <SpeakerIcon className="h-4 w-4" />}
             {speaking ? 'Stop' : 'Listen'}
           </Button>
+        )}
+        {!isScript && (
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              className="flex-1"
+              onClick={async () => {
+                const r = await shareText({ title: 'A decision I’m weighing', text: adviceText(item) })
+                if (r === 'copied') showToast('Copied — paste it to a friend')
+              }}
+            >
+              🗳️ Ask for advice
+            </Button>
+            {item.reviewDate && (
+              <Button
+                variant="secondary"
+                className="flex-1"
+                onClick={async () => {
+                  const r = await shareText({ title: 'Keep me accountable', text: accountabilityText(item) })
+                  if (r !== 'failed') {
+                    patch({ sharedAccountability: true })
+                    if (r === 'copied') showToast('Copied — send it to your partner')
+                  }
+                }}
+              >
+                🤝 Accountability
+              </Button>
+            )}
+          </div>
         )}
         <div className="flex gap-2">
           <Button

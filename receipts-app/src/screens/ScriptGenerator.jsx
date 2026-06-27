@@ -16,6 +16,8 @@ import {
 import RuleNudge from '../components/RuleNudge.jsx'
 import MicButton from '../components/MicButton.jsx'
 import CooldownModal from '../components/CooldownModal.jsx'
+import AiCopilotButton from '../components/AiCopilotButton.jsx'
+import { improveScript } from '../lib/ai.js'
 import { uid } from '../lib/id.js'
 
 const blankInputs = { recipient: '', context: '', detail: '', name: '' }
@@ -261,6 +263,16 @@ export default function ScriptGenerator() {
                 Reset edits
               </Button>
             </div>
+
+            <AiCopilotButton
+              label="✨ Improve with AI"
+              className="w-full"
+              run={() => improveScript(content, TONES.find((t) => t.id === tone)?.label?.toLowerCase())}
+              onResult={(out) => {
+                setContent(out)
+                showToast('Refined by AI co-pilot')
+              }}
+            />
 
             {/* Conversation rehearsal — pre-draft replies to likely reactions */}
             <Card className="space-y-3">

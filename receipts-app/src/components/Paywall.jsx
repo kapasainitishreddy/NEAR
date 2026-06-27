@@ -5,6 +5,7 @@ import { CheckIcon } from './icons.jsx'
 import { usePurchases } from '../context/PurchaseContext.jsx'
 import { PRO_BENEFITS } from '../config.js'
 import { useApp } from '../context/AppContext.jsx'
+import { shareText } from '../lib/haptics.js'
 
 // The upgrade screen. Lists Pro benefits and the live RevenueCat packages
 // (or a tasteful placeholder when billing isn't configured yet).
@@ -79,9 +80,24 @@ export default function Paywall({ open, onClose }) {
             {/* Packages */}
             <div className="mt-6 space-y-2">
               {pro ? (
-                <div className="flex items-center justify-center gap-2 rounded-2xl bg-emerald-500/10 py-4 text-emerald-300">
-                  <CheckIcon className="h-5 w-5" /> You’re all set — thank you 💜
-                </div>
+                <>
+                  <div className="flex items-center justify-center gap-2 rounded-2xl bg-emerald-500/10 py-4 text-emerald-300">
+                    <CheckIcon className="h-5 w-5" /> You’re all set — thank you 💜
+                  </div>
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={async () => {
+                      const r = await shareText({
+                        title: 'Receipts',
+                        text: 'I love Receipts for thinking through decisions — you should try it. 🧾',
+                      })
+                      if (r === 'copied') showToast('Copied — share it with a friend')
+                    }}
+                  >
+                    🎁 Gift Receipts to a friend
+                  </Button>
+                </>
               ) : packages.length > 0 ? (
                 <>
                   {packages.map((p, i) => (

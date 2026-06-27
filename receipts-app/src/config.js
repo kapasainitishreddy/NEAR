@@ -53,6 +53,21 @@ export function isPurchasesConfigured() {
   )
 }
 
+// ---------------------------------------------------------------------------
+// AI Co-pilot (optional, Pro). Point `endpoint` at YOUR backend proxy that
+// forwards the prompt to an LLM (Claude/OpenAI/etc.) — never ship a provider key
+// in the client. Left empty = AI features stay off (no errors, nothing shown).
+// The proxy should accept { prompt, system, model } and return { text }.
+// ---------------------------------------------------------------------------
+export const AI = {
+  endpoint: '', // e.g. 'https://your-worker.example.com/ai'
+  model: 'claude-haiku-4-5',
+}
+
+export function isAiConfigured() {
+  return typeof AI.endpoint === 'string' && /^https?:\/\//.test(AI.endpoint)
+}
+
 // Marketing copy for the paywall — shown regardless of configuration.
 export const PRO_BENEFITS = [
   { emoji: '🎨', title: 'Every theme', body: 'Unlock Obsidian, Sepia & Forest palettes.' },

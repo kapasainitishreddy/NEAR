@@ -20,4 +20,19 @@ export async function initNative() {
   } catch {
     /* splash plugin unavailable — ignore */
   }
+
+  // Deep links — let Siri Shortcuts / other apps jump straight to an action:
+  //   receipts://new      → new decision receipt
+  //   receipts://script   → new panic script
+  //   receipts://insights → insights
+  try {
+    const { App } = await import('@capacitor/app')
+    App.addListener('appUrlOpen', ({ url }) => {
+      const action = String(url || '').split('://')[1]?.replace(/\/+$/, '') || ''
+      const route = { new: '/receipt', receipt: '/receipt', script: '/script', insights: '/insights' }[action]
+      if (route) window.location.hash = `#${route}`
+    })
+  } catch {
+    /* app plugin unavailable — ignore */
+  }
 }

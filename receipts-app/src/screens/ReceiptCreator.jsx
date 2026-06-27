@@ -19,6 +19,8 @@ import RuleNudge from '../components/RuleNudge.jsx'
 import DecisionMatrix, { emptyMatrix, matrixIsMeaningful } from '../components/DecisionMatrix.jsx'
 import MicButton from '../components/MicButton.jsx'
 import TalkItOut from '../components/TalkItOut.jsx'
+import AiCopilotButton from '../components/AiCopilotButton.jsx'
+import { challengeDecision } from '../lib/ai.js'
 import { DECISION_TEMPLATES } from '../lib/templates.js'
 import { scheduleForItem } from '../lib/notifications.js'
 import { uid } from '../lib/id.js'
@@ -79,6 +81,7 @@ export default function ReceiptCreator() {
   const [matrix, setMatrix] = useState(null)
   const [talkOpen, setTalkOpen] = useState(false)
   const [rested, setRested] = useState(0)
+  const [aiChallenge, setAiChallenge] = useState('')
 
   useEffect(() => {
     if (!existing) return
@@ -299,6 +302,23 @@ export default function ReceiptCreator() {
             />
             <MicButton onResult={(t) => appendDictation('premortem', t)} className="mt-1" />
           </div>
+
+          <AiCopilotButton
+            label="✨ Challenge my reasoning"
+            className="w-full"
+            run={() =>
+              challengeDecision({ title: form.title, finalDecision: form.finalDecision, mainReason: form.mainReason })
+            }
+            onResult={setAiChallenge}
+          />
+          {aiChallenge && (
+            <div className="rounded-2xl border border-lavender-400/20 bg-lavender-500/[0.08] p-4">
+              <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-lavender-300">
+                AI co-pilot asks
+              </div>
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-ivory-100/90">{aiChallenge}</p>
+            </div>
+          )}
         </Card>
 
         {/* Decision matrix (optional) */}

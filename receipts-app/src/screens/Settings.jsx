@@ -13,6 +13,8 @@ import OperatingManualModal from '../components/OperatingManualModal.jsx'
 import WrappedModal from '../components/WrappedModal.jsx'
 import Paywall from '../components/Paywall.jsx'
 import { exportJournal } from '../lib/journal.js'
+import { shareText } from '../lib/haptics.js'
+import { inviteText } from '../lib/social.js'
 import { loadVoices, speak, speechSupported } from '../lib/speech.js'
 import { requestPermission, syncAll, cancelForItem } from '../lib/notifications.js'
 import { Capacitor } from '@capacitor/core'
@@ -218,6 +220,20 @@ export default function Settings() {
           {!pro && <span className="text-gold-300">→</span>}
         </div>
       </button>
+
+      {/* Invite */}
+      <Card className="mb-5">
+        <Button
+          variant="secondary"
+          className="w-full justify-start"
+          onClick={async () => {
+            const r = await shareText({ title: 'Receipts', text: inviteText() })
+            if (r === 'copied') showToast('Invite copied — share it anywhere')
+          }}
+        >
+          💜 Invite a friend
+        </Button>
+      </Card>
 
       {/* Appearance */}
       <h2 className="mb-3 px-1 font-serif text-lg text-ivory-50">Appearance</h2>
