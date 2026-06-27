@@ -75,7 +75,7 @@ export function isAiConfigured() {
 // ---------------------------------------------------------------------------
 export const SOCIAL = {
   pollsEndpoint: '', // e.g. 'https://receipts-polls.you.workers.dev'
-  webBaseUrl: '', // public URL of the hosted web app, for shareable poll links
+  webBaseUrl: 'https://receipts-decisions.netlify.app', // hosted web app, for shareable poll links
 }
 
 export function isPollsConfigured() {

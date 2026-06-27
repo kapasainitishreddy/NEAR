@@ -1,0 +1,44 @@
+name: Deploy web (Netlify)
+
+# Builds the web app and deploys it to the Netlify site
+# https://receipts-decisions.netlify.app
+#
+# One-time setup: add a repo secret NETLIFY_AUTH_TOKEN
+#   (Netlify → User settings → Applications → New access token).
+# The site id below is not secret.
+on:
+  workflow_dispatch:
+  push:
+    branches: ['claude/receipts-app-mvp-9iwvu8', 'main']
+    paths:
+      - 'receipts-app/**'
+      - '.github/workflows/deploy-web.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: receipts-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: receipts-app/package-lock.json
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Deploy to Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: fe433736-e75b-4c7c-9667-e3035a9ba53b
+        run: |
+          if [ -z "$NETLIFY_AUTH_TOKEN" ]; then
+            echo "::error::Add a NETLIFY_AUTH_TOKEN repo secret to enable deploys."
+            exit 1
+          fi
+          npx --yes netlify-cli@17 deploy --prod --dir=dist --site="$NETLIFY_SITE_ID"
