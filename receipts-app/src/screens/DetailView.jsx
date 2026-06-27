@@ -6,6 +6,7 @@ import { Button, Card, StatusBadge, Select, SafetyNote } from '../components/ui.
 import { ConfirmModal } from '../components/Modal.jsx'
 import { CopyIcon, TrashIcon, StarIcon, ClockIcon, ShareIcon, EditIcon, ChartIcon, SpeakerIcon, StopIcon } from '../components/icons.jsx'
 import { speak, stopSpeaking, speechSupported } from '../lib/speech.js'
+import { cancelForItem } from '../lib/notifications.js'
 import { STATUSES, reversibilityMeta, outcomeMeta } from '../lib/constants.js'
 import { fmtDate, fmtRelative, isDue } from '../lib/format.js'
 import { getCategory } from '../lib/scriptTemplates.js'
@@ -393,6 +394,7 @@ export default function DetailView() {
         open={confirm}
         onClose={() => setConfirm(false)}
         onConfirm={async () => {
+          cancelForItem(item.id)
           await deleteFrom(collection, item.id)
           showToast('Deleted')
           navigate('/library')

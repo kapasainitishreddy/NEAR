@@ -11,6 +11,8 @@ import PinSetupModal from '../components/PinSetupModal.jsx'
 import OperatingManualModal from '../components/OperatingManualModal.jsx'
 import Paywall from '../components/Paywall.jsx'
 import { loadVoices, speak, speechSupported } from '../lib/speech.js'
+import { requestPermission, syncAll, cancelForItem } from '../lib/notifications.js'
+import { Capacitor } from '@capacitor/core'
 
 function ThemePicker({ value, onChange }) {
   return (
@@ -109,6 +111,26 @@ export default function Settings() {
     setNewValue('')
   }
   const removeValue = (v) => updateSettings({ values: coreValues.filter((x) => x !== v) })
+
+  const toggleReminders = async () => {
+    if (settings.remindersEnabled) {
+      decisions.forEach((d) => cancelForItem(d.id))
+      updateSettings({ remindersEnabled: false })
+      showToast('Reminders turned off')
+      return
+    }
+    const granted = await requestPermission()
+    if (!granted) {
+      showToast(
+        Capacitor?.isNativePlatform?.() ? 'Notifications permission denied' : 'Reminders work in the installed app',
+        'error'
+      )
+      return
+    }
+    updateSettings({ remindersEnabled: true })
+    await syncAll(decisions)
+    showToast('Reminders on — we’ll nudge you for reviews & deadlines')
+  }
 
   const toggleLock = () => {
     if (settings.lockEnabled) {
@@ -315,6 +337,21 @@ export default function Settings() {
             <span
               className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all ${
                 settings.reduceMotion ? 'left-6' : 'left-1'
+              }`}
+            />
+          </button>
+        </Row>
+        <Row title="Reminders" desc="Nudge me for reviews & decide-by deadlines">
+          <button
+            onClick={toggleReminders}
+            className={`relative h-7 w-12 rounded-full transition ${
+              settings.remindersEnabled ? 'bg-emerald-500/70' : 'bg-white/15'
+            }`}
+            aria-label="Toggle reminders"
+          >
+            <span
+              className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all ${
+                settings.remindersEnabled ? 'left-6' : 'left-1'
               }`}
             />
           </button>

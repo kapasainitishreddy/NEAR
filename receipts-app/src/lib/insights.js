@@ -131,6 +131,23 @@ export function patterns(decisions) {
     }
   }
 
+  // 4) Rest / energy correlation
+  const tired = withOutcome.filter((d) => d.rested && d.rested <= 2)
+  const fresh = withOutcome.filter((d) => d.rested && d.rested >= 4)
+  if (tired.length >= 2 && fresh.length >= 2) {
+    const rt = reliefRate(tired)
+    const rf = reliefRate(fresh)
+    if (rf - rt >= 0.2) {
+      findings.push({
+        emoji: '😴',
+        title: 'Rest changes your judgment',
+        body: `Decisions you made well-rested feel right ${Math.round(rf * 100)}% of the time, vs ${Math.round(
+          rt * 100
+        )}% when you were running on empty.`,
+      })
+    }
+  }
+
   return findings
 }
 

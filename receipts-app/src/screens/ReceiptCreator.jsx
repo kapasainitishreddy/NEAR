@@ -19,6 +19,8 @@ import RuleNudge from '../components/RuleNudge.jsx'
 import DecisionMatrix, { emptyMatrix, matrixIsMeaningful } from '../components/DecisionMatrix.jsx'
 import MicButton from '../components/MicButton.jsx'
 import TalkItOut from '../components/TalkItOut.jsx'
+import { DECISION_TEMPLATES } from '../lib/templates.js'
+import { scheduleForItem } from '../lib/notifications.js'
 import { uid } from '../lib/id.js'
 
 const SECTIONS = [
@@ -76,6 +78,7 @@ export default function ReceiptCreator() {
   const [sealNote, setSealNote] = useState(false)
   const [matrix, setMatrix] = useState(null)
   const [talkOpen, setTalkOpen] = useState(false)
+  const [rested, setRested] = useState(0)
 
   useEffect(() => {
     if (!existing) return
@@ -90,7 +93,14 @@ export default function ReceiptCreator() {
     setValuesCost(existing.valuesCost || [])
     setSealNote(!!existing.sealNote)
     setMatrix(existing.matrix || null)
+    setRested(existing.rested || 0)
   }, [existing])
+
+  const applyTemplate = (tpl) => {
+    setForm({ ...blank, ...tpl.prefill })
+    if (tpl.category) setCategory(tpl.category)
+    showToast(`${tpl.name} template applied`)
+  }
 
   const set = (key, value) => setForm((p) => ({ ...p, [key]: value }))
   const appendDictation = (key, text) =>
@@ -129,12 +139,14 @@ export default function ReceiptCreator() {
       valuesCost,
       sealNote: sealNote && !!reviewDate,
       matrix: matrix && matrixIsMeaningful(matrix) ? matrix : null,
+      rested,
       outcome: existing?.outcome || '',
       outcomeNote: existing?.outcomeNote || '',
       outcomeAt: existing?.outcomeAt || '',
       createdAt: existing?.createdAt,
     }
     await saveTo('decisions', payload)
+    if (settings?.remindersEnabled) scheduleForItem(payload)
     showToast(existing ? 'Receipt updated' : 'Decision receipt saved')
     navigate('/library')
   }
@@ -206,6 +218,25 @@ export default function ReceiptCreator() {
           <div className="text-xs text-white/45">Answer a few questions by voice — we’ll fill this in.</div>
         </div>
       </button>
+
+      {/* Start from a template (new receipts only) */}
+      {!existing && (
+        <div className="mb-4">
+          <div className="label-base">Start from a template</div>
+          <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 no-scrollbar">
+            {DECISION_TEMPLATES.map((tpl) => (
+              <button
+                key={tpl.id}
+                onClick={() => applyTemplate(tpl)}
+                className="flex shrink-0 items-center gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.02] px-3 py-2 text-sm text-ivory-50 transition hover:bg-white/[0.06]"
+              >
+                <span>{tpl.emoji}</span>
+                {tpl.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Rule-aware conscience */}
       <RuleNudge rules={rules} context={`${form.title} ${form.finalDecision} ${form.mainReason}`} className="mb-4" />
@@ -322,6 +353,27 @@ export default function ReceiptCreator() {
           <Field label="Decide by" hint="A gentle deadline so the choice doesn’t drift forever.">
             <Input type="date" value={decideBy} onChange={(e) => setDecideBy(e.target.value)} />
           </Field>
+
+          <div>
+            <div className="label-base">How rested are you right now?</div>
+            <div className="flex gap-2">
+              {[1, 2, 3, 4, 5].map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setRested(rested === r ? 0 : r)}
+                  className={`flex-1 rounded-xl border py-2 text-lg transition ${
+                    rested === r ? 'border-gold-400/50 bg-gold-400/10' : 'border-white/[0.07] bg-white/[0.02] hover:bg-white/[0.05]'
+                  }`}
+                  aria-label={`Rested ${r} of 5`}
+                >
+                  {['😴', '🥱', '😐', '🙂', '⚡'][r - 1]}
+                </button>
+              ))}
+            </div>
+            <p className="mt-1 text-[11px] text-white/40">
+              Insights can later show whether tired decisions go differently for you.
+            </p>
+          </div>
 
           <div>
             <div className="label-base">Values this honors</div>

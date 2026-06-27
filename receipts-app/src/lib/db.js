@@ -31,6 +31,7 @@ const DEFAULT_SETTINGS = {
   speechRate: 1,
   speechVoice: '',
   decisionStyle: '',
+  remindersEnabled: false,
 }
 
 async function read(key, fallback) {
@@ -137,6 +138,7 @@ export async function exportAll() {
       speechRate: settings.speechRate || 1,
       speechVoice: settings.speechVoice || '',
       decisionStyle: settings.decisionStyle || '',
+      remindersEnabled: !!settings.remindersEnabled,
     },
   }
 }
