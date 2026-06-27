@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useApp } from '../context/AppContext.jsx'
 import { usePurchases } from '../context/PurchaseContext.jsx'
@@ -9,7 +10,9 @@ import { DownloadIcon, UploadIcon, TrashIcon, LockIcon, CheckIcon, ShareIcon, Sp
 import { THEMES, VALUE_SUGGESTIONS } from '../lib/constants.js'
 import PinSetupModal from '../components/PinSetupModal.jsx'
 import OperatingManualModal from '../components/OperatingManualModal.jsx'
+import WrappedModal from '../components/WrappedModal.jsx'
 import Paywall from '../components/Paywall.jsx'
+import { exportJournal } from '../lib/journal.js'
 import { loadVoices, speak, speechSupported } from '../lib/speech.js'
 import { requestPermission, syncAll, cancelForItem } from '../lib/notifications.js'
 import { Capacitor } from '@capacitor/core'
@@ -96,8 +99,10 @@ export default function Settings() {
   const [pinOpen, setPinOpen] = useState(false)
   const [manualOpen, setManualOpen] = useState(false)
   const [paywallOpen, setPaywallOpen] = useState(false)
+  const [wrappedOpen, setWrappedOpen] = useState(false)
   const [newValue, setNewValue] = useState('')
   const [voices, setVoices] = useState([])
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (speechSupported()) loadVoices().then(setVoices)
@@ -378,12 +383,28 @@ export default function Settings() {
 
       {/* Keepsakes */}
       <h2 className="mb-3 px-1 font-serif text-lg text-ivory-50">Keepsakes</h2>
-      <Card className="mb-5">
+      <Card className="mb-5 space-y-3">
         <Button variant="secondary" className="w-full justify-start" onClick={() => setManualOpen(true)}>
           <ShareIcon className="h-5 w-5" /> Create my Operating Manual
         </Button>
-        <p className="mt-2 px-1 text-xs text-white/40">
-          A beautiful one-page poster of your rules and guiding principles.
+        <Button variant="secondary" className="w-full justify-start" onClick={() => setWrappedOpen(true)}>
+          🎁 My Decision Wrapped
+        </Button>
+        <Button
+          variant="secondary"
+          className="w-full justify-start"
+          onClick={() => {
+            const ok = exportJournal({ decisions, rules, name: settings.name })
+            if (!ok) showToast('Allow pop-ups to export the journal', 'error')
+          }}
+        >
+          📖 Print / save Decision Journal (PDF)
+        </Button>
+        <Button variant="ghost" className="w-full justify-start" onClick={() => navigate('/quiz')}>
+          🧠 Discover my decision style
+        </Button>
+        <p className="px-1 text-xs text-white/40">
+          Beautiful exports of your rules, year, and decisions — all generated on this device.
         </p>
       </Card>
 
@@ -479,6 +500,7 @@ export default function Settings() {
         }}
       />
       <OperatingManualModal open={manualOpen} onClose={() => setManualOpen(false)} />
+      <WrappedModal open={wrappedOpen} onClose={() => setWrappedOpen(false)} />
       <Paywall open={paywallOpen} onClose={() => setPaywallOpen(false)} />
     </>
   )

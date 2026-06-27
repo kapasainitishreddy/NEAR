@@ -8,6 +8,7 @@ import ItemCard from '../components/ItemCard.jsx'
 import { ScriptIcon, ReceiptIcon, ClockIcon, PlusIcon, ChartIcon, CoinIcon, SettingsIcon } from '../components/icons.jsx'
 import { CalmPageArt } from '../components/illustrations.jsx'
 import CoinFlipModal from '../components/CoinFlipModal.jsx'
+import FocusMode from '../components/FocusMode.jsx'
 import AnimatedNumber from '../components/AnimatedNumber.jsx'
 import { isDue, isUpcoming, fmtRelative } from '../lib/format.js'
 import { dailyPrompt } from '../lib/prompts.js'
@@ -56,6 +57,7 @@ export default function Home() {
 
   const empty = all.length === 0 && rules.length === 0
   const [coinOpen, setCoinOpen] = useState(false)
+  const [focusOpen, setFocusOpen] = useState(false)
   const prompt = useMemo(() => dailyPrompt(), [])
   const streak = useMemo(() => computeStreak([...all, ...rules]), [all, rules])
 
@@ -205,19 +207,33 @@ export default function Home() {
         </section>
       )}
 
-      {/* Flip a coin */}
-      <button
-        onClick={() => setCoinOpen(true)}
-        className="card mb-6 flex w-full items-center gap-3 !p-4 text-left transition hover:bg-white/[0.06]"
-      >
-        <div className="grid h-10 w-10 place-items-center rounded-xl bg-gold-500/15 text-gold-300">
-          <CoinIcon className="h-5 w-5" />
-        </div>
-        <div>
-          <div className="font-semibold text-ivory-50">Flip for a small choice</div>
-          <div className="text-xs text-white/45">Let your gut reaction reveal the answer</div>
-        </div>
-      </button>
+      {/* Quick tools */}
+      <div className="mb-6 grid grid-cols-2 gap-3">
+        <button
+          onClick={() => setCoinOpen(true)}
+          className="card flex items-center gap-3 !p-4 text-left transition hover:bg-white/[0.06]"
+        >
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gold-500/15 text-gold-300">
+            <CoinIcon className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="text-sm font-semibold text-ivory-50">Flip a coin</div>
+            <div className="text-xs text-white/45">For small choices</div>
+          </div>
+        </button>
+        <button
+          onClick={() => setFocusOpen(true)}
+          className="card flex items-center gap-3 !p-4 text-left transition hover:bg-white/[0.06]"
+        >
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-lavender-500/15 text-lavender-300 text-lg">
+            🌙
+          </div>
+          <div>
+            <div className="text-sm font-semibold text-ivory-50">Focus mode</div>
+            <div className="text-xs text-white/45">Breathe before deciding</div>
+          </div>
+        </button>
+      </div>
 
       {empty && (
         <EmptyState
@@ -287,6 +303,7 @@ export default function Home() {
       </SafetyNote>
 
       <CoinFlipModal open={coinOpen} onClose={() => setCoinOpen(false)} />
+      <FocusMode open={focusOpen} onClose={() => setFocusOpen(false)} />
     </>
   )
 }
