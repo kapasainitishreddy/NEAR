@@ -18,6 +18,7 @@ import DevilsAdvocate from '../components/DevilsAdvocate.jsx'
 import RuleNudge from '../components/RuleNudge.jsx'
 import DecisionMatrix, { emptyMatrix, matrixIsMeaningful } from '../components/DecisionMatrix.jsx'
 import MicButton from '../components/MicButton.jsx'
+import TalkItOut from '../components/TalkItOut.jsx'
 import { uid } from '../lib/id.js'
 
 const SECTIONS = [
@@ -74,6 +75,7 @@ export default function ReceiptCreator() {
   const [valuesCost, setValuesCost] = useState([])
   const [sealNote, setSealNote] = useState(false)
   const [matrix, setMatrix] = useState(null)
+  const [talkOpen, setTalkOpen] = useState(false)
 
   useEffect(() => {
     if (!existing) return
@@ -189,6 +191,21 @@ export default function ReceiptCreator() {
           )
         })()}
       </Card>
+
+      {/* Talk it out — hands-free voice reflection */}
+      <button
+        onClick={() => setTalkOpen(true)}
+        className="card group relative mb-4 flex w-full items-center gap-3 overflow-hidden !p-4 text-left transition hover:bg-white/[0.06]"
+      >
+        <div className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full bg-lavender-500/20 blur-2xl" />
+        <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-lavender-400/30 to-lavender-500/10 text-lg">
+          🎙️
+        </div>
+        <div>
+          <div className="font-semibold text-ivory-50">Talk it out</div>
+          <div className="text-xs text-white/45">Answer a few questions by voice — we’ll fill this in.</div>
+        </div>
+      </button>
 
       {/* Rule-aware conscience */}
       <RuleNudge rules={rules} context={`${form.title} ${form.finalDecision} ${form.mainReason}`} className="mb-4" />
@@ -387,6 +404,15 @@ export default function ReceiptCreator() {
           {existing ? 'Update receipt' : 'Save decision receipt'}
         </Button>
       </div>
+
+      <TalkItOut
+        open={talkOpen}
+        onClose={() => setTalkOpen(false)}
+        onApply={(answers) => {
+          setForm((p) => ({ ...p, ...answers }))
+          showToast('Filled from your answers')
+        }}
+      />
     </>
   )
 }
